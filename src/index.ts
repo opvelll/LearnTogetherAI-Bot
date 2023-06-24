@@ -43,10 +43,6 @@ async function main() {
 
     if (handler) {
       handler.handle(message);
-    } else {
-      message.reply(
-        "想定されていないチャンネルです。管理者にお問い合わせください。"
-      );
     }
   });
 
