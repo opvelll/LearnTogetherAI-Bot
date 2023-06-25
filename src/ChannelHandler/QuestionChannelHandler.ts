@@ -1,12 +1,25 @@
-import { Message, Client, TextChannel } from "discord.js";
-import { ChannelHandler } from "./ChannelHandler";
+import { Message, TextChannel } from "discord.js";
+import { ChannelHandler } from "./GreetingChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
+import { get_encoding } from "@dqbd/tiktoken";
 
-export class MultiChannelHandler implements ChannelHandler {
+export class QuestionChannelHandler implements ChannelHandler {
   private chatManager: OpenAIProcessor;
 
   constructor(chatManager: OpenAIProcessor) {
     this.chatManager = chatManager;
+  }
+
+  /**
+   * Tiktokenを使用してテキスト文字列のトークンの長さを計算します。
+   * @param text トークン化するテキスト。
+   * @returns トークンの数。
+   */
+  private tiktokenLength(text: string): number {
+    const tokenizer = get_encoding("cl100k_base");
+    const tokens = tokenizer.encode(text);
+    tokenizer.free();
+    return tokens.length;
   }
 
   estimateTokenCount(japaneseText: string): number {
@@ -26,7 +39,7 @@ export class MultiChannelHandler implements ChannelHandler {
 
     // 新しいメッセージから順に処理
     for (let [key, message] of messages.reverse()) {
-      const estimatedTokens = this.estimateTokenCount(message.content);
+      const estimatedTokens = this.tiktokenLength(message.content);
 
       // トークン数が3000を超える場合、処理を停止
       if (totalTokens + estimatedTokens > 3000) {
@@ -41,18 +54,14 @@ export class MultiChannelHandler implements ChannelHandler {
     return messageList;
   }
 
-  async process(message: Message) {
+  async processMessageForChannel(message: Message) {
     // チャンネルを取得
     const channel = (await message.client.channels.fetch(
-      process.env.CHANNEL_ID_MULTI!
+      process.env.CHANNEL_ID_QUESTION!
     )) as TextChannel;
 
     // 3000トークンを超えないメッセージのリストを取得
     const list = await this.getMessages(channel);
-    // メッセージをコンソールに表示
-    list.forEach((message) => {
-      console.log(`${message.author.tag}: ${message.content}`);
-    });
 
     this.chatManager.chatCompletionFromChannelHistory(list).then((response) => {
       message.reply(response);
@@ -60,10 +69,8 @@ export class MultiChannelHandler implements ChannelHandler {
   }
 
   handle(message: Message): void {
-    try {
-      this.process(message).then(() => {});
-    } catch (error) {
+    this.processMessageForChannel(message).catch((error) => {
       console.error("Error fetching messages: ", error);
-    }
+    });
   }
 }

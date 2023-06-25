@@ -1,9 +1,7 @@
 import { Message } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-import { get_encoding } from "@dqbd/tiktoken";
-import { ChannelHandler } from "./ChannelHandler";
+import { ChannelHandler } from "./GreetingChannelHandler";
 import { PineconeClient } from "@pinecone-database/pinecone";
-import { create } from "domain";
 
 type MetadataObj = {
   channelId: string;
@@ -19,18 +17,6 @@ export class SearchChannelHandler implements ChannelHandler {
   constructor(openAIProcessor: OpenAIProcessor, pinecone: PineconeClient) {
     this.openAIProcessor = openAIProcessor;
     this.pinecone = pinecone;
-  }
-
-  /**
-   * Tiktokenを使用してテキスト文字列のトークンの長さを計算します。
-   * @param text トークン化するテキスト。
-   * @returns トークンの数。
-   */
-  private tiktokenLength(text: string): number {
-    const tokenizer = get_encoding("cl100k_base");
-    const tokens = tokenizer.encode(text);
-    tokenizer.free();
-    return tokens.length;
   }
 
   /**

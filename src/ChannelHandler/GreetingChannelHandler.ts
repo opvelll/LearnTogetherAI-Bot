@@ -1,12 +1,11 @@
 import { Message } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-import { encoding_for_model, Tiktoken } from "@dqbd/tiktoken";
 
 export interface ChannelHandler {
   handle(message: Message): void;
 }
 
-export class SingleChannelHandler implements ChannelHandler {
+export class GreetingChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
 
   constructor(openAIProcessor: OpenAIProcessor) {
