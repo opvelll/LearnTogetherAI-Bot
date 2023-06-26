@@ -1,4 +1,7 @@
 node_modules
-.env
+.env**
 config.json
 build
+*.log
+npm-debug.log*
+.DS_Store

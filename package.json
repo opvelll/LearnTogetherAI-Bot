@@ -10,7 +10,7 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn  ./src/index.ts",
+    "dev": "NODE_ENV=dev ts-node-dev --respawn  ./src/index.ts",
     "prod": "tsc --build && node ./build/index.js",
     "build": "tsc"
   },

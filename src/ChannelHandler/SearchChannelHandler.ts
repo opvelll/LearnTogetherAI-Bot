@@ -13,10 +13,15 @@ type MetadataObj = {
 export class SearchChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
   private pinecone: PineconeClient;
+  private pineconeIndexName: string;
 
   constructor(openAIProcessor: OpenAIProcessor, pinecone: PineconeClient) {
     this.openAIProcessor = openAIProcessor;
     this.pinecone = pinecone;
+    if (process.env.PINECONE_INDEX_NAME === undefined) {
+      throw new Error("環境変数PINECONE_INDEX_NAMEが設定されていません。");
+    }
+    this.pineconeIndexName = process.env.PINECONE_INDEX_NAME;
   }
 
   /**
@@ -42,7 +47,7 @@ export class SearchChannelHandler implements ChannelHandler {
       ]);
 
       // Pineconeのインデックスにアクセスします
-      const index = this.pinecone.Index("togetherai");
+      const index = this.pinecone.Index(this.pineconeIndexName);
 
       // Pineconeにデータをアップサートします。
       const upsertRequest = {
