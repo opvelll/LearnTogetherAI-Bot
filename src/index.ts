@@ -9,8 +9,10 @@ import OpenAIProcessor from "./OpenAIProcessor/OpenAIProcessor";
 import Pinecone from "./Pinecone/Pinecone";
 import { ChannelType } from "discord.js";
 
+const envPath = process.env.NODE_ENV === "dev" ? ".env.dev" : ".env";
+
 require("dotenv").config({
-  path: `.env.${process.env.NODE_ENV}`,
+  path: envPath,
 });
 
 async function main() {
