@@ -5,3 +5,4 @@ build
 *.log
 npm-debug.log*
 .DS_Store
+webapp_logs.zip
