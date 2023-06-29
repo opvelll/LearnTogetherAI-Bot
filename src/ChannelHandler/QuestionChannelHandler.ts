@@ -2,6 +2,9 @@ import { Message, TextChannel } from "discord.js";
 import { ChannelHandler } from "./GreetingChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { get_encoding } from "@dqbd/tiktoken";
+import logger from "../logger";
+
+const MAX_TOKENS = 3000;
 
 export class QuestionChannelHandler implements ChannelHandler {
   private chatManager: OpenAIProcessor;
@@ -22,14 +25,6 @@ export class QuestionChannelHandler implements ChannelHandler {
     return tokens.length;
   }
 
-  estimateTokenCount(japaneseText: string): number {
-    // 日本語の文字数をカウント
-    const charCount = Array.from(japaneseText).length;
-    // 文字数を1.5倍にしてトークン数を推定
-    const estimatedTokenCount = charCount * 1.5;
-    return estimatedTokenCount;
-  }
-
   async getMessages(channel: TextChannel) {
     // 最新の100件のメッセージを取得
     const messages = await channel.messages.fetch({ limit: 100 });
@@ -41,8 +36,8 @@ export class QuestionChannelHandler implements ChannelHandler {
     for (let [key, message] of messages.reverse()) {
       const estimatedTokens = this.tiktokenLength(message.content);
 
-      // トークン数が3000を超える場合、処理を停止
-      if (totalTokens + estimatedTokens > 3000) {
+      // トークン数がMAX_TOKENSを超える場合、処理を停止
+      if (totalTokens + estimatedTokens > MAX_TOKENS) {
         break;
       }
 
@@ -50,27 +45,30 @@ export class QuestionChannelHandler implements ChannelHandler {
       messageList.push(message);
     }
 
-    // トークン数が3000を超えないメッセージのリストを返す
+    // トークン数がMAX_TOKENSを超えないメッセージのリストを返す
     return messageList;
   }
 
   async processMessageForChannel(message: Message) {
-    // チャンネルを取得
-    const channel = (await message.client.channels.fetch(
-      process.env.CHANNEL_ID_QUESTION!
-    )) as TextChannel;
+    try {
+      // チャンネルを取得
+      const channel = message.channel as TextChannel;
 
-    // 3000トークンを超えないメッセージのリストを取得
-    const list = await this.getMessages(channel);
+      // MAX_TOKENSトークンを超えないメッセージのリストを取得
+      const list = await this.getMessages(channel);
 
-    this.chatManager.chatCompletionFromChannelHistory(list).then((response) => {
-      message.reply(response);
-    });
+      const response = await this.chatManager.chatCompletionFromChannelHistory(
+        list
+      );
+      await message.reply(response);
+    } catch (error) {
+      logger.error("Error processing message for question channel: ", error);
+      // errorが発生した場合はエラーメッセージを返す
+      await message.reply("An error occurred while processing your message.");
+    }
   }
 
   handle(message: Message): void {
-    this.processMessageForChannel(message).catch((error) => {
-      console.error("Error fetching messages: ", error);
-    });
+    this.processMessageForChannel(message);
   }
 }
