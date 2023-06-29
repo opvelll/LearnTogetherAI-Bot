@@ -2,6 +2,7 @@ import { Message } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./GreetingChannelHandler";
 import { PineconeClient } from "@pinecone-database/pinecone";
+import logger from "../logger";
 
 type MetadataObj = {
   channelId: string;
@@ -16,11 +17,13 @@ export class SearchChannelHandler implements ChannelHandler {
   private pineconeIndexName: string;
 
   constructor(openAIProcessor: OpenAIProcessor, pinecone: PineconeClient) {
+    if (process.env.PINECONE_INDEX_NAME === undefined) {
+      const message = "環境変数PINECONE_INDEX_NAMEが設定されていません。";
+      logger.error(message);
+      throw new Error(message);
+    }
     this.openAIProcessor = openAIProcessor;
     this.pinecone = pinecone;
-    if (process.env.PINECONE_INDEX_NAME === undefined) {
-      throw new Error("環境変数PINECONE_INDEX_NAMEが設定されていません。");
-    }
     this.pineconeIndexName = process.env.PINECONE_INDEX_NAME;
   }
 
@@ -39,7 +42,7 @@ export class SearchChannelHandler implements ChannelHandler {
    * メッセージを処理し、検索を実行し、応答を送信します。
    * @param message 処理するメッセージ。
    */
-  private async processMessageAndRespond(message: Message) {
+  private async processMessageAndRespond(message: Message): Promise<void> {
     try {
       // OpenAIのAPIから埋め込みを取得します。
       const embedding = await this.openAIProcessor.createEmbedding([
@@ -56,7 +59,7 @@ export class SearchChannelHandler implements ChannelHandler {
             id: message.id,
             values: embedding,
             metadata: {
-              channelId: process.env.CHANNEL_ID_SEARCH,
+              channelId: message.channel.id,
               content: message.content,
               author: message.author.id,
               createdAt: this.toUnixTimeStampAtDayLevel(message.createdAt), // 種類が少ないほうがメモリが少なくなるそうなので、日付のみを保存する
@@ -65,7 +68,8 @@ export class SearchChannelHandler implements ChannelHandler {
         ],
         namespace: "self-introduction",
       };
-      await index.upsert({ upsertRequest });
+      const upsertResponse = await index.upsert({ upsertRequest });
+      logger.info("upsertResponse:", upsertResponse);
 
       // 類似の埋め込みをPineconeで検索します。
       const queryRequest = {
@@ -80,7 +84,7 @@ export class SearchChannelHandler implements ChannelHandler {
       const queryResponse = await index.query({
         queryRequest,
       });
-      console.log(queryResponse);
+      logger.info("queryResponse:", queryResponse);
 
       // クエリの応答からコンテキストを作成します。
       const context = queryResponse.matches?.map((match) => {
@@ -97,9 +101,10 @@ export class SearchChannelHandler implements ChannelHandler {
         );
 
       // 生成された応答をメッセージに返信として送信します。
-      message.reply(gptResponse);
+      await message.reply(gptResponse);
     } catch (error) {
-      console.error("Error processing the message:", error);
+      logger.error("Error processing the Search Channel message:", error);
+      await message.reply("Error processing the message.");
     }
   }
 
