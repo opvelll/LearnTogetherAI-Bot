@@ -3,41 +3,55 @@ import {
   ChatCompletionResponseMessage,
   OpenAIApi,
 } from "openai";
+import logger from "../logger";
 
 class ChatCompletionClient {
-  private openai: OpenAIApi; // OpenAIのAPIを使うためのインスタンス
+  private openai: OpenAIApi; // Instance to use OpenAI's API
 
   constructor(openai: OpenAIApi) {
     this.openai = openai;
   }
 
-  // ChatCompletionのAPIを呼び出す
+  /**
+   * Calls the ChatCompletion API.
+   * @param messages The messages to be sent to the ChatCompletion API.
+   * @returns The ChatCompletion response message.
+   * @throws {Error} If the API call is unsuccessful or the response is in an incorrect format.
+   */
   async chatCompletion(
     messages: ChatCompletionRequestMessage[]
   ): Promise<ChatCompletionResponseMessage> {
     try {
-      console.log("API呼び出しを開始します。メッセージ:", messages); // API呼び出し前のログ
+      logger.info({ messages }, "Starting API call");
 
-      // OpenAI APIにリクエストを送る
+      // Send a request to the OpenAI API
       const response = await this.openai.createChatCompletion({
         model: "gpt-3.5-turbo",
-        messages: messages,
+        messages,
       });
 
-      // 応答が不正な場合はエラーを投げる
-      if (response.data.choices[0].message === undefined) {
+      // Log the received response
+      logger.info(
+        { responseMessage: response.data.choices[0].message },
+        "Received response"
+      );
+
+      // Throw an error if the response is in an incorrect format
+      if (!response.data.choices[0].message) {
         throw new Error(
-          `Failed to fetch completion from ChatGPT API: ${response.statusText}`
+          `Failed to fetch completion from ChatGPT API, received an unexpected response format: ${JSON.stringify(
+            response
+          )}`
         );
       }
 
-      console.log("応答を受け取りました:", response.data.choices[0].message); // 応答後のログ
-
       return response.data.choices[0].message;
     } catch (error: any) {
-      console.error(
-        `ChatGPT APIからの応答の取得に失敗しました: ${error.message}, 応答: ${error.response}`
-      ); // エラーログ
+      // Log the error
+      logger.error(
+        { error, errorResponse: error.response },
+        "Failed to fetch completion from ChatGPT API"
+      );
       throw error;
     }
   }
