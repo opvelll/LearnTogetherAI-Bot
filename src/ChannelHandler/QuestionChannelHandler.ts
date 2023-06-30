@@ -62,7 +62,7 @@ export class QuestionChannelHandler implements ChannelHandler {
       );
       await message.reply(response);
     } catch (error) {
-      logger.error("Error processing message for question channel: ", error);
+      logger.error(error, "Error processing message for question channel: ");
       // errorが発生した場合はエラーメッセージを返す
       await message.reply("An error occurred while processing your message.");
     }

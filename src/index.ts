@@ -56,7 +56,7 @@ async function main() {
     }
 
     const bot = new MyBot((message) => {
-      logger.info(`Received message: ${message.content}`);
+      logger.info(message.content, "Message received:");
 
       if (message.channel.type !== ChannelType.GuildText) return;
       if (message.author.bot) return;

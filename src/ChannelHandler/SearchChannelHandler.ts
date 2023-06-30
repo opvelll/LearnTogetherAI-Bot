@@ -48,6 +48,7 @@ export class SearchChannelHandler implements ChannelHandler {
       const embedding = await this.openAIProcessor.createEmbedding([
         message.content,
       ]);
+      logger.info("openAI api embedding");
 
       // Pineconeのインデックスにアクセスします
       const index = this.pinecone.Index(this.pineconeIndexName);
@@ -69,7 +70,7 @@ export class SearchChannelHandler implements ChannelHandler {
         namespace: "self-introduction",
       };
       const upsertResponse = await index.upsert({ upsertRequest });
-      logger.info("upsertResponse:", upsertResponse);
+      logger.info(upsertResponse, "Pinecone api upsertResponse:");
 
       // 類似の埋め込みをPineconeで検索します。
       const queryRequest = {
@@ -84,7 +85,7 @@ export class SearchChannelHandler implements ChannelHandler {
       const queryResponse = await index.query({
         queryRequest,
       });
-      logger.info("queryResponse:", queryResponse);
+      logger.info(queryResponse, "queryResponse:");
 
       // クエリの応答からコンテキストを作成します。
       const context = queryResponse.matches?.map((match) => {
@@ -103,7 +104,7 @@ export class SearchChannelHandler implements ChannelHandler {
       // 生成された応答をメッセージに返信として送信します。
       await message.reply(gptResponse);
     } catch (error) {
-      logger.error("Error processing the Search Channel message:", error);
+      logger.error(error, "Error processing the Search Channel message:");
       await message.reply("Error processing the message.");
     }
   }

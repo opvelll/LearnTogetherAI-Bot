@@ -40,8 +40,9 @@ class MyBot {
   public async start() {
     const token = process.env.DISCORD_TOKEN;
     if (!token) {
-      logger.error("DISCORD_TOKEN is not set in environment variables.");
-      return;
+      const errorMessage = "DISCORD_TOKEN is not set in environment variables.";
+      logger.error(errorMessage);
+      throw new Error(errorMessage);
     }
 
     try {
@@ -49,7 +50,7 @@ class MyBot {
       await this.client.login(token);
       logger.info("Bot has started successfully.");
     } catch (error) {
-      logger.error("Error starting the bot:", error);
+      logger.error(error, "Error starting the bot:");
     }
   }
 }
