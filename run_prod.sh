@@ -6,7 +6,7 @@ USERNAME=$(id -un)
 GROUP=$(id -gn)
 
 # logrotateの設定ファイルを生成
-cat > /etc/logrotate.d/mybot <<EOL
+sudo cat > /etc/logrotate.d/mybot <<EOL
 ${LOG_DIR}/mybot.log {
     daily
     rotate 3
@@ -21,4 +21,4 @@ ${LOG_DIR}/mybot.log {
 EOL
 
 # その他のプロダクション用のコマンドを実行
-tsc --build && node ./build/index.js
+node ./build/index.js
