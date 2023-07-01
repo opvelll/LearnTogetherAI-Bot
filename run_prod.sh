@@ -6,7 +6,7 @@ USERNAME=$(id -un)
 GROUP=$(id -gn)
 
 # logrotateの設定ファイルを生成
-sudo cat > /etc/logrotate.d/mybot <<EOL
+cat > /etc/logrotate.d/mybot <<EOL
 ${LOG_DIR}/mybot.log {
     daily
     rotate 3
