@@ -12,8 +12,8 @@
   "main": "bot.js",
   "scripts": {
     "dev": "NODE_ENV=dev ts-node-dev --respawn  ./src/index.ts",
-    "prod": "./run_prod.sh",
-    "build": "tsc --build"
+    "build": "tsc --build",
+    "start": "node ./build/index.js"
   },
   "keywords": [],
   "author": "",
