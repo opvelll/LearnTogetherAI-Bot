@@ -5,7 +5,6 @@ import {
 import { SearchChannelHandler } from "../ChannelHandler/SearchChannelHandler";
 import { QuestionChannelHandler } from "../ChannelHandler/QuestionChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-import Pinecone from "../Pinecone/Pinecone";
 import {
   CHANNEL_ID_GREETING,
   CHANNEL_ID_QUESTION,
@@ -13,7 +12,7 @@ import {
 } from "./configLoader";
 import { PineconeClient } from "@pinecone-database/pinecone";
 
-export default async function initChannelActions(
+export default function initChannelActions(
   openAIProcessor: OpenAIProcessor,
   pinecone: PineconeClient
 ) {

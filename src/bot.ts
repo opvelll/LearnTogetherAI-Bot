@@ -13,25 +13,15 @@ import Pinecone from "./Pinecone/Pinecone";
 // Discord Botのクラス
 class MyBot {
   private client: Client;
-  private messageHandler: (
-    message: Message,
-    openAIProcessor: OpenAIProcessor,
-    pinecone: PineconeClient
-  ) => void;
+  private messageHandler: (message: Message) => void;
   private interactionCreateHandler: (interaction: Interaction) => void;
   /**
    * MyBotのコンストラクタ。
    * @param messageHandler メッセージを処理するためのコールバック関数。
    */
   constructor(
-    messageHandler: (
-      message: Message,
-      openAIProcessor: OpenAIProcessor,
-      pinecone: PineconeClient
-    ) => void,
-    interactionCreateHandler: (interaction: Interaction) => void,
-    openAIProcessor: OpenAIProcessor,
-    pinecone: PineconeClient
+    messageHandler: (message: Message) => void,
+    interactionCreateHandler: (interaction: Interaction) => void
   ) {
     // メッセージハンドラを初期化
     this.messageHandler = messageHandler;
@@ -54,7 +44,7 @@ class MyBot {
 
     // 新しいメッセージが作成されたときに呼び出されるイベントハンドラ
     this.client.on("messageCreate", (message) => {
-      this.messageHandler(message, openAIProcessor, pinecone);
+      this.messageHandler(message);
     });
 
     this.client.on("interactionCreate", (interaction) => {
