@@ -6,9 +6,6 @@ import {
   Message,
 } from "discord.js";
 import logger from "./logger";
-import OpenAIProcessor from "./OpenAIProcessor/OpenAIProcessor";
-import { PineconeClient } from "@pinecone-database/pinecone";
-import Pinecone from "./Pinecone/Pinecone";
 
 // Discord Botのクラス
 class MyBot {
