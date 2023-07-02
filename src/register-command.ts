@@ -1,4 +1,4 @@
-import { REST, Routes } from "discord.js";
+import { CommandInteraction, REST, Routes } from "discord.js";
 import { DELETE_MY_DATA } from "./command";
 import logger from "./logger";
 // 環境変数を読み込む (開発環境の場合は.env.devを読み込む)
@@ -11,7 +11,7 @@ require("dotenv").config({
 const commands = [
   {
     name: DELETE_MY_DATA,
-    description: "DBに保存されているメッセージを削除します",
+    description: "DBに保存されている自己紹介や今日することデータを削除します",
   },
 ];
 
@@ -26,7 +26,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
         process.env.DISCORD_CLIENT_ID!,
         process.env.GUILD_ID!
       )
-    )) as any;
+    )) as CommandInteraction[];
     logger.info(existingCommands);
 
     // Delete existing commands
