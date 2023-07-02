@@ -22,7 +22,12 @@ async function main() {
     const interactionCreateHandler = async (interaction: Interaction) => {
       if (!interaction.isCommand()) return;
 
-      if (interaction.channelId !== process.env.CHANNEL_ID_SEARCH) return;
+      if (interaction.channelId !== process.env.CHANNEL_ID_SEARCH) {
+        await interaction.reply(
+          `このコマンドは <#${process.env.CHANNEL_ID_SEARCH}> で実行してください。`
+        );
+        return;
+      }
 
       const { commandName } = interaction;
 
