@@ -128,6 +128,7 @@ npm install
 sudo npm install pm2 -g
 node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc
 npm run build
+npm run register
 pm2 start "npm run start" --name "mybot"
 ```
 

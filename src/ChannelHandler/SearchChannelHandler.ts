@@ -70,7 +70,7 @@ export class SearchChannelHandler implements ChannelHandler {
         namespace: "self-introduction",
       };
       const upsertResponse = await index.upsert({ upsertRequest });
-      logger.info(upsertResponse, "Pinecone api upsertResponse:");
+      logger.info({ upsertResponse }, "Pinecone api upsertResponse:");
 
       // 類似の埋め込みをPineconeで検索します。
       const queryRequest = {
@@ -85,7 +85,7 @@ export class SearchChannelHandler implements ChannelHandler {
       const queryResponse = await index.query({
         queryRequest,
       });
-      logger.info(queryResponse, "queryResponse:");
+      logger.info({ queryResponse }, "queryResponse:");
 
       // クエリの応答からコンテキストを作成します。
       const context = queryResponse.matches?.map((match) => {

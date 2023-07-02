@@ -1,18 +1,41 @@
-import { Client, Events, GatewayIntentBits, Message } from "discord.js";
+import {
+  Client,
+  Events,
+  GatewayIntentBits,
+  Interaction,
+  Message,
+} from "discord.js";
 import logger from "./logger";
+import OpenAIProcessor from "./OpenAIProcessor/OpenAIProcessor";
+import { PineconeClient } from "@pinecone-database/pinecone";
+import Pinecone from "./Pinecone/Pinecone";
 
 // Discord Botのクラス
 class MyBot {
   private client: Client;
-  private messageHandler: (message: Message) => void;
-
+  private messageHandler: (
+    message: Message,
+    openAIProcessor: OpenAIProcessor,
+    pinecone: PineconeClient
+  ) => void;
+  private interactionCreateHandler: (interaction: Interaction) => void;
   /**
    * MyBotのコンストラクタ。
    * @param messageHandler メッセージを処理するためのコールバック関数。
    */
-  constructor(messageHandler: (message: Message) => void) {
+  constructor(
+    messageHandler: (
+      message: Message,
+      openAIProcessor: OpenAIProcessor,
+      pinecone: PineconeClient
+    ) => void,
+    interactionCreateHandler: (interaction: Interaction) => void,
+    openAIProcessor: OpenAIProcessor,
+    pinecone: PineconeClient
+  ) {
     // メッセージハンドラを初期化
     this.messageHandler = messageHandler;
+    this.interactionCreateHandler = interactionCreateHandler;
 
     // Discordクライアントを作成
     this.client = new Client({
@@ -20,6 +43,7 @@ class MyBot {
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessageReactions,
       ],
     });
 
@@ -30,7 +54,11 @@ class MyBot {
 
     // 新しいメッセージが作成されたときに呼び出されるイベントハンドラ
     this.client.on("messageCreate", (message) => {
-      this.messageHandler(message);
+      this.messageHandler(message, openAIProcessor, pinecone);
+    });
+
+    this.client.on("interactionCreate", (interaction) => {
+      this.interactionCreateHandler(interaction);
     });
   }
 

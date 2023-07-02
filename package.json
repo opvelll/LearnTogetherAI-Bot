@@ -13,6 +13,8 @@
   "scripts": {
     "dev": "NODE_ENV=dev ts-node-dev --respawn  ./src/index.ts",
     "build": "tsc --build",
+    "register:dev": "tsc --build && NODE_ENV=dev node ./build/register-command.js",
+    "register": "node ./build/register-command.js",
     "start": "node ./build/index.js"
   },
   "keywords": [],
