@@ -3,32 +3,31 @@ import { DELETE_MY_DATA } from "../command";
 import Pinecone from "../Pinecone/Pinecone";
 import { PineconeClient } from "@pinecone-database/pinecone";
 import logger from "../logger";
+import { PineconeManager } from "../Pinecone/PineconeManager";
 
 export default async function interactionCreateHandler(
-  pinecone: PineconeClient
+  pineconeManager: PineconeManager
 ) {
   return async (interaction: Interaction) => {
     if (!interaction.isCommand()) return;
 
-    const index = pinecone.Index(process.env.PINECONE_INDEX_NAME!);
-
     const { commandName } = interaction;
 
     if (commandName === DELETE_MY_DATA) {
-      const request = {
-        deleteRequest: {
-          filter: {
-            author: { $eq: interaction.user.id },
-          },
-        },
-      };
+      try {
+        await pineconeManager.deleteUserData(interaction.user.id);
 
-      const response = await index._delete(request);
-      logger.info({ response }, "Deleted pinecone data");
-      await interaction.reply({
-        content: `<@${interaction.user.id}> さんのデータを削除しました。`,
-        ephemeral: true,
-      });
+        await interaction.reply({
+          content: `<@${interaction.user.id}> さんのデータを削除しました。`,
+          ephemeral: true,
+        });
+      } catch (error) {
+        logger.error(error);
+        await interaction.reply({
+          content: `<@${interaction.user.id}> さんのデータの削除に失敗しました。`,
+          ephemeral: true,
+        });
+      }
     }
   };
 }

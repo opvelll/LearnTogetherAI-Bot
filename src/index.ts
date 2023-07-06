@@ -5,25 +5,30 @@ require("dotenv").config({
 });
 
 import MyBot from "./bot";
-import { Interaction } from "discord.js";
 import logger from "./logger";
 import messageHandler from "./MessageHandler/messageHandler";
 import OpenAIProcessor from "./OpenAIProcessor/OpenAIProcessor";
 import Pinecone from "./Pinecone/Pinecone";
 import initChannelActions from "./MessageHandler/channelActions";
-import { DELETE_MY_DATA } from "./command";
 import interactionCreateHandler from "./InteractionHandler/InteractionHandler";
+import { configLoader } from "./MessageHandler/configLoader";
+import { PineconeManager } from "./Pinecone/PineconeManager";
 
 async function main() {
   try {
+    const config = configLoader();
     const openAIProcessor = new OpenAIProcessor();
     const pinecone = await Pinecone.init();
-
-    const onMessage = messageHandler(
-      initChannelActions(openAIProcessor, pinecone)
+    const pineconeManager = new PineconeManager(
+      pinecone,
+      config.PINECONE_INDEX_NAME
     );
 
-    const onInteractionCreate = await interactionCreateHandler(pinecone);
+    const onMessage = messageHandler(
+      initChannelActions(openAIProcessor, pineconeManager, config)
+    );
+
+    const onInteractionCreate = await interactionCreateHandler(pineconeManager);
 
     const bot = new MyBot(onMessage, onInteractionCreate);
 

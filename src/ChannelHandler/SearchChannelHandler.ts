@@ -3,6 +3,11 @@ import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./GreetingChannelHandler";
 import { PineconeClient } from "@pinecone-database/pinecone";
 import logger from "../logger";
+import {
+  QueryResponse,
+  VectorOperationsApi,
+} from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch";
+import { PineconeManager } from "../Pinecone/PineconeManager";
 
 type MetadataObj = {
   channelId: string;
@@ -13,18 +18,14 @@ type MetadataObj = {
 
 export class SearchChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
-  private pinecone: PineconeClient;
-  private pineconeIndexName: string;
+  private pineconeManager: PineconeManager;
 
-  constructor(openAIProcessor: OpenAIProcessor, pinecone: PineconeClient) {
-    if (process.env.PINECONE_INDEX_NAME === undefined) {
-      const message = "環境変数PINECONE_INDEX_NAMEが設定されていません。";
-      logger.error(message);
-      throw new Error(message);
-    }
+  constructor(
+    openAIProcessor: OpenAIProcessor,
+    pineconeManager: PineconeManager
+  ) {
     this.openAIProcessor = openAIProcessor;
-    this.pinecone = pinecone;
-    this.pineconeIndexName = process.env.PINECONE_INDEX_NAME;
+    this.pineconeManager = pineconeManager;
   }
 
   /**
@@ -45,61 +46,28 @@ export class SearchChannelHandler implements ChannelHandler {
   private async processMessageAndRespond(message: Message): Promise<void> {
     try {
       // OpenAIのAPIから埋め込みを取得します。
-      const embedding = await this.openAIProcessor.createEmbedding([
-        message.content,
-      ]);
-      logger.info("openAI api embedding");
-
-      // Pineconeのインデックスにアクセスします
-      const index = this.pinecone.Index(this.pineconeIndexName);
+      const embedding = await this.getEmbedding(message);
 
       // Pineconeにデータをアップサートします。
-      const upsertRequest = {
-        vectors: [
-          {
-            id: message.id,
-            values: embedding,
-            metadata: {
-              channelId: message.channel.id,
-              content: message.content,
-              author: message.author.id,
-              createdAt: this.toUnixTimeStampAtDayLevel(message.createdAt), // 種類が少ないほうがメモリが少なくなるそうなので、日付のみを保存する
-            },
-          },
-        ],
-        namespace: "self-introduction",
+      const metadata = {
+        channelId: message.channel.id,
+        content: message.content,
+        author: message.author.id,
+        createdAt: this.toUnixTimeStampAtDayLevel(message.createdAt), // 種類が少ないほうがメモリが少なくなるそうなので、日付のみを保存する
       };
-      const upsertResponse = await index.upsert({ upsertRequest });
-      logger.info({ upsertResponse }, "Pinecone api upsertResponse:");
+      await this.pineconeManager.upsertData(message.id, embedding, metadata);
 
       // 類似の埋め込みをPineconeで検索します。
-      const queryRequest = {
-        vector: embedding,
-        topK: 3,
-        includeMetadata: true,
-        filter: {
-          author: { $ne: message.author.id },
-        },
-        namespace: "self-introduction",
-      };
-      const queryResponse = await index.query({
-        queryRequest,
-      });
-      logger.info({ queryResponse }, "queryResponse:");
+      const queryResponse = await this.pineconeManager.querySimilarEmbeddings(
+        embedding,
+        message.author.id
+      );
 
       // クエリの応答からコンテキストを作成します。
-      const context = queryResponse.matches?.map((match) => {
-        const { author, content, createdAt } = match.metadata as MetadataObj;
-        return [author, content, new Date(createdAt)];
-      }) as [string, string, Date][];
+      const context = this.buildContextFromQueryResponse(queryResponse);
 
       // OpenAIのGPTを使用して応答を生成します。
-      const gptResponse =
-        await this.openAIProcessor.chatCompletionFromUserIntroduction(
-          message.author.id,
-          message.content,
-          context
-        );
+      const gptResponse = await this.generateGptResponse(message, context);
 
       // 生成された応答をメッセージに返信として送信します。
       await message.reply(gptResponse);
@@ -107,6 +75,32 @@ export class SearchChannelHandler implements ChannelHandler {
       logger.error(error, "Error processing the Search Channel message:");
       await message.reply("Error processing the message.");
     }
+  }
+
+  private async generateGptResponse(
+    message: Message<boolean>,
+    context: [string, string, Date][]
+  ) {
+    return await this.openAIProcessor.chatCompletionFromUserIntroduction(
+      message.author.id,
+      message.content,
+      context
+    );
+  }
+
+  private buildContextFromQueryResponse(queryResponse: QueryResponse) {
+    return queryResponse.matches?.map((match) => {
+      const { author, content, createdAt } = match.metadata as MetadataObj;
+      return [author, content, new Date(createdAt)];
+    }) as [string, string, Date][];
+  }
+
+  private async getEmbedding(message: Message<boolean>) {
+    const embedding = await this.openAIProcessor.createEmbedding([
+      message.content,
+    ]);
+    logger.info("openAI api embedding");
+    return embedding;
   }
 
   /**

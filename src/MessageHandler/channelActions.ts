@@ -5,16 +5,14 @@ import {
 import { SearchChannelHandler } from "../ChannelHandler/SearchChannelHandler";
 import { QuestionChannelHandler } from "../ChannelHandler/QuestionChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-import {
-  CHANNEL_ID_GREETING,
-  CHANNEL_ID_QUESTION,
-  CHANNEL_ID_SEARCH,
-} from "./configLoader";
-import { PineconeClient } from "@pinecone-database/pinecone";
+
+import { ConfigData } from "./configLoader";
+import { PineconeManager } from "../Pinecone/PineconeManager";
 
 export default function initChannelActions(
   openAIProcessor: OpenAIProcessor,
-  pinecone: PineconeClient
+  pineconeManager: PineconeManager,
+  { CHANNEL_ID_GREETING, CHANNEL_ID_QUESTION, CHANNEL_ID_SEARCH }: ConfigData
 ) {
   const channelActions = new Map<string, ChannelHandler>();
 
@@ -35,7 +33,7 @@ export default function initChannelActions(
   if (CHANNEL_ID_SEARCH) {
     channelActions.set(
       CHANNEL_ID_SEARCH,
-      new SearchChannelHandler(openAIProcessor, pinecone)
+      new SearchChannelHandler(openAIProcessor, pineconeManager)
     );
   }
   return channelActions;
