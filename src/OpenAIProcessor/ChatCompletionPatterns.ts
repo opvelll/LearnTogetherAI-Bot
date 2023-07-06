@@ -10,7 +10,7 @@ export class ChatCompletionPatterns extends OpenAIClient {
     this.modelTrainingDate = "Sep 2021";
   }
 
-  async chatCompletionFromUserInput(userInput: string) {
+  async chatCompletionFromUserGreeting(userInput: string) {
     const todayDate = new Date().toLocaleDateString();
     const systemPrompt = `
 貴方は、AI勉強会サーバーに設置された挨拶を返すシンプルなボットです。
@@ -29,8 +29,27 @@ export class ChatCompletionPatterns extends OpenAIClient {
     ] as ChatCompletionRequestMessage[];
     return await this.chatCompletionClient.chatCompletion(prompts);
   }
+  async chatCompletionFromIntroduction(userInput: string) {
+    const todayDate = new Date().toLocaleDateString();
+    const systemPrompt = `
+貴方は、AI勉強会サーバーに設置されたシンプルなボットです。
+ユーザーの自己紹介に一回のやりとりで終わるように答えて下さい。
+なお今日の日付は${todayDate}で、貴方の最終学習日は${this.modelTrainingDate}です。`;
 
-  async chatCompletionFromUserIntroduction(
+    const prompts = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: userInput,
+      },
+    ] as ChatCompletionRequestMessage[];
+    return await this.chatCompletionClient.chatCompletion(prompts);
+  }
+
+  async chatCompletionFromUserWorkPlan(
     userId: string,
     userInput: string,
     context: [string, string, Date][]
@@ -38,10 +57,11 @@ export class ChatCompletionPatterns extends OpenAIClient {
     const todayDate = new Date().toLocaleDateString();
     const systemPrompt = `
 もくもく勉強会用挨拶BOTとして振る舞ってください。
-参加者のユーザーAの自己紹介文と、過去の他のユーザーの似た自己紹介文を挿入します。
-その情報を必要なら使い、ユーザーAが勉強会でコラボすると面白いユーザーを紹介してあげてください。
+ユーザーの今日やることや目的に対して、答えて下さい。
+システムが他の過去のユーザーから似た自己紹介文を挿入します。
+その情報を必要なら参考に使い、ユーザーが勉強会でコラボすると面白いユーザーを紹介して盛り上げてください。
 ユーザー名を書く場合は、<@userId>のようにしてください。
-文章は簡潔に一回のやりとりで終わるようにして下さい。
+文章は一回のやりとりで終わるようにして下さい。
 今日の日付は${todayDate}で、貴方の最終学習日は${this.modelTrainingDate}です。
 
 例:
@@ -82,7 +102,7 @@ ${message}
 userId: ${userId}
 ${userInput} 
 
-[システムからの自動挿入・他のユーザーの自己紹介情報・必要なら参考程度に]:
+[システムからの挿入]:
 ${contextPrompt} 
 
 `,
@@ -91,7 +111,9 @@ ${contextPrompt}
     return await this.chatCompletionClient.chatCompletion(prompts);
   }
 
-  async chatCompletionFromChannelHistory(messages: Message<boolean>[]) {
+  async chatCompletionFromQuestionWithChannelHistory(
+    messages: Message<boolean>[]
+  ) {
     const todayDate = new Date().toLocaleDateString();
     const systemPrompt = `
 貴方はAI勉強会会場にいる想像力豊かで、色々なことに興味を持つ良き相談役です。

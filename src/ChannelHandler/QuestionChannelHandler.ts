@@ -57,9 +57,10 @@ export class QuestionChannelHandler implements ChannelHandler {
       // MAX_TOKENSトークンを超えないメッセージのリストを取得
       const list = await this.getMessages(channel);
 
-      const response = await this.chatManager.chatCompletionFromChannelHistory(
-        list
-      );
+      const response =
+        await this.chatManager.chatCompletionFromQuestionWithChannelHistory(
+          list
+        );
       await message.reply(response);
     } catch (error) {
       logger.error(error, "Error processing message for question channel: ");

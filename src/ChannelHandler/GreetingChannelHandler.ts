@@ -15,7 +15,7 @@ export class GreetingChannelHandler implements ChannelHandler {
   handle(message: Message): void {
     // チャンネル1での処理
     this.openAIProcessor
-      .chatCompletionFromUserInput(message.content)
+      .chatCompletionFromUserGreeting(message.content)
       .then((response) => {
         message.reply(response);
       });

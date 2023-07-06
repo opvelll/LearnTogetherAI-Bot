@@ -2,17 +2,23 @@ import {
   ChannelHandler,
   GreetingChannelHandler,
 } from "../ChannelHandler/GreetingChannelHandler";
-import { SearchChannelHandler } from "../ChannelHandler/SearchChannelHandler";
+import { WorkPlanChannelHandler } from "../ChannelHandler/WorkPlanCahnnelHandler";
 import { QuestionChannelHandler } from "../ChannelHandler/QuestionChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 
 import { ConfigData } from "./configLoader";
 import { PineconeManager } from "../Pinecone/PineconeManager";
+import { IntroductionsChannelHandler } from "../ChannelHandler/IntroductionsChannelHandler";
 
 export default function initChannelActions(
   openAIProcessor: OpenAIProcessor,
   pineconeManager: PineconeManager,
-  { CHANNEL_ID_GREETING, CHANNEL_ID_QUESTION, CHANNEL_ID_SEARCH }: ConfigData
+  {
+    CHANNEL_ID_GREETING,
+    CHANNEL_ID_QUESTION,
+    CHANNEL_ID_WORK_PLAN,
+    CHANNEL_ID_SELF_INTRO,
+  }: ConfigData
 ) {
   const channelActions = new Map<string, ChannelHandler>();
 
@@ -30,10 +36,17 @@ export default function initChannelActions(
     );
   }
 
-  if (CHANNEL_ID_SEARCH) {
+  if (CHANNEL_ID_SELF_INTRO) {
     channelActions.set(
-      CHANNEL_ID_SEARCH,
-      new SearchChannelHandler(openAIProcessor, pineconeManager)
+      CHANNEL_ID_SELF_INTRO,
+      new IntroductionsChannelHandler(openAIProcessor, pineconeManager)
+    );
+  }
+
+  if (CHANNEL_ID_WORK_PLAN) {
+    channelActions.set(
+      CHANNEL_ID_WORK_PLAN,
+      new WorkPlanChannelHandler(openAIProcessor, pineconeManager)
     );
   }
   return channelActions;

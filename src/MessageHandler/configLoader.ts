@@ -3,7 +3,7 @@ import logger from "../logger";
 export type ConfigData = {
   CHANNEL_ID_GREETING: string | undefined;
   CHANNEL_ID_QUESTION: string | undefined;
-  CHANNEL_ID_SEARCH: string | undefined;
+  CHANNEL_ID_WORK_PLAN: string | undefined;
   CHANNEL_ID_SELF_INTRO: string | undefined;
   PINECONE_INDEX_NAME: string;
 };
@@ -12,12 +12,17 @@ export function configLoader(): ConfigData {
   const {
     CHANNEL_ID_GREETING,
     CHANNEL_ID_QUESTION,
-    CHANNEL_ID_SEARCH,
+    CHANNEL_ID_WORK_PLAN,
     CHANNEL_ID_SELF_INTRO,
     PINECONE_INDEX_NAME,
   } = process.env;
   // すべての環境変数が設定されていない場合はエラーを投げる
-  if (!CHANNEL_ID_GREETING && !CHANNEL_ID_QUESTION && !CHANNEL_ID_SEARCH) {
+  if (
+    !CHANNEL_ID_GREETING &&
+    !CHANNEL_ID_QUESTION &&
+    !CHANNEL_ID_WORK_PLAN &&
+    !CHANNEL_ID_SELF_INTRO
+  ) {
     const errorMessage =
       "None of the required environment variables are set.(channel id)";
     logger.error(errorMessage);
@@ -33,7 +38,7 @@ export function configLoader(): ConfigData {
   return {
     CHANNEL_ID_GREETING,
     CHANNEL_ID_QUESTION,
-    CHANNEL_ID_SEARCH,
+    CHANNEL_ID_WORK_PLAN,
     CHANNEL_ID_SELF_INTRO,
     PINECONE_INDEX_NAME,
   };
