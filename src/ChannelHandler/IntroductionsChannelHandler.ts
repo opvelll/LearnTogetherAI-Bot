@@ -5,7 +5,10 @@ import { PineconeManager } from "../Pinecone/PineconeManager";
 import { MetadataObj } from "../Pinecone/MetadataObj";
 import { toUnixTimeStampAtDayLevel } from "../Pinecone/dateUtils";
 import logger from "../logger";
-import { ChatCompletionRequestMessage } from "openai";
+import {
+  fetchReplyChain,
+  transformHistoryToRequestMessages,
+} from "./chatHistoryProcessor";
 
 export class IntroductionsChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
@@ -80,31 +83,15 @@ export class IntroductionsChannelHandler implements ChannelHandler {
 
   async process(message: Message): Promise<void> {
     try {
-      const messageList = await this.getReplyChain(message);
-      const history = messageList.reverse().map((message) => {
-        if (message.author.bot) {
-          return {
-            role: "system",
-            content: message.content,
-          };
-        } else {
-          return {
-            role: "user",
-            content: `<@${message.author.id}>: ${message.content}`,
-          };
-        }
-      });
-      const promptList = [
-        {
-          role: "system",
-          content: this.systemPrompt,
-        },
-        ...history,
-      ] as ChatCompletionRequestMessage[];
+      const messageList = await fetchReplyChain(this.BOT_ID, message);
+      const requestMessages = transformHistoryToRequestMessages(
+        this.systemPrompt,
+        messageList
+      );
 
       const responseMessage =
         await this.openAIProcessor.chatCompletionClient.chatCompletionWithFunction(
-          promptList,
+          requestMessages,
           this.chatFunctions
         );
       if (responseMessage && responseMessage.function_call) {
@@ -117,15 +104,15 @@ export class IntroductionsChannelHandler implements ChannelHandler {
             message,
             args.content
           );
-          promptList.push(responseMessage);
-          promptList.push({
+          requestMessages.push(responseMessage);
+          requestMessages.push({
             role: "function",
             name: name,
             content: JSON.stringify(list),
           });
           const response2 =
             await this.openAIProcessor.chatCompletionClient.chatCompletion0613(
-              promptList
+              requestMessages
             );
           message.reply(response2!.content!);
         }
@@ -136,30 +123,6 @@ export class IntroductionsChannelHandler implements ChannelHandler {
       logger.error(error, "Error processing the introduction Channel message:");
       await message.reply("Error processing the message.");
     }
-  }
-
-  async getReplyChain(message: Message) {
-    let userId = message.author.id; // messageの送信者のID
-    let conversationHistory: Message[] = [];
-    let currentMessage: Message | undefined = message;
-
-    while (currentMessage) {
-      conversationHistory.push(currentMessage);
-
-      if (currentMessage.reference && currentMessage.reference.messageId) {
-        let messageId: string = currentMessage.reference.messageId;
-        currentMessage = await message.channel.messages.fetch(messageId);
-        if (
-          currentMessage.author.id !== this.BOT_ID &&
-          currentMessage.author.id !== userId
-        ) {
-          break; // 自分かボット以外のメッセージが含まれていた場合は終了
-        }
-      } else {
-        currentMessage = undefined;
-      }
-    }
-    return conversationHistory;
   }
 
   handle(message: Message): void {
