@@ -1,8 +1,9 @@
+import { OpenAIApi } from "openai";
 import { ChatCompletionPatterns } from "./ChatCompletionPatterns";
 
 class OpenAIProcessor extends ChatCompletionPatterns {
-  constructor() {
-    super();
+  constructor(openai: OpenAIApi) {
+    super(openai);
   }
 
   async createEmbedding(texts: string[]) {

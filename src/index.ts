@@ -8,17 +8,26 @@ import MyBot from "./bot";
 import logger from "./logger";
 import messageHandler from "./MessageHandler/messageHandler";
 import OpenAIProcessor from "./OpenAIProcessor/OpenAIProcessor";
-import Pinecone from "./Pinecone/Pinecone";
+import createPineconeInstance from "./Pinecone/Pinecone";
 import initChannelActions from "./MessageHandler/channelActions";
 import interactionCreateHandler from "./InteractionHandler/InteractionHandler";
 import { configLoader } from "./MessageHandler/configLoader";
 import { PineconeManager } from "./Pinecone/PineconeManager";
+import createOpenAIApiInstance from "./OpenAI/OpenAIConfigurator";
 
 async function main() {
   try {
     const config = configLoader();
-    const openAIProcessor = new OpenAIProcessor();
-    const pinecone = await Pinecone.init();
+    const openAIProcessor = new OpenAIProcessor(
+      createOpenAIApiInstance(
+        config.OPENAI_ORGANIZATION_ID,
+        config.OPENAI_API_KEY
+      )
+    );
+    const pinecone = await createPineconeInstance(
+      config.PINECONE_ENVIRONMENT,
+      config.PINECONE_API_KEY
+    );
     const pineconeManager = new PineconeManager(
       pinecone,
       config.PINECONE_INDEX_NAME

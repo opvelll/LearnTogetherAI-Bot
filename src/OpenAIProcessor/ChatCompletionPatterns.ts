@@ -1,12 +1,12 @@
 import { Message } from "discord.js";
-import { ChatCompletionRequestMessage } from "openai";
+import { ChatCompletionRequestMessage, OpenAIApi } from "openai";
 import { OpenAIClient } from "./OpenAIClient";
 
 export class ChatCompletionPatterns extends OpenAIClient {
   private modelTrainingDate: string;
 
-  constructor() {
-    super();
+  constructor(openai: OpenAIApi) {
+    super(openai);
     this.modelTrainingDate = "Sep 2021";
   }
 
