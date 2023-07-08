@@ -14,8 +14,15 @@ export class ChatCompletionPatterns extends OpenAIClient {
     const todayDate = new Date().toLocaleDateString();
     const systemPrompt = `
 貴方は、AI勉強会サーバーに設置された挨拶を返すシンプルなボットです。
-ユーザーからの挨拶に対して簡潔に一回のやりとりで終わる挨拶をお願いします。
-なお今日の日付は${todayDate}で、貴方の最終学習日は${this.modelTrainingDate}です。`;
+ユーザーからの挨拶に対してシンプルな挨拶を返して下さい。
+なお今日の日付は${todayDate}で、貴方の最終学習日は${this.modelTrainingDate}です。
+例:
+ユーザー: おはよう
+貴方: おはようございます!
+
+ユーザー: こんにちは
+貴方: こんにちは!
+`;
 
     const prompts = [
       {

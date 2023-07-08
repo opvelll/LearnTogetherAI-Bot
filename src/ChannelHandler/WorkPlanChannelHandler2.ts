@@ -1,4 +1,4 @@
-import { Message, TextChannel } from "discord.js";
+import { Message } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./GreetingChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
@@ -6,7 +6,6 @@ import { MetadataObj } from "../Pinecone/MetadataObj";
 import { toUnixTimeStampAtDayLevel } from "../Pinecone/dateUtils";
 import logger from "../logger";
 import {
-  fetchMessagesWithinTokenLimit,
   fetchReplyChain,
   transformHistoryToRequestMessages,
 } from "./chatHistoryProcessor";
@@ -15,7 +14,7 @@ import {
   ChatCompletionResponseMessage,
 } from "openai";
 
-export class IntroductionsChannelHandler implements ChannelHandler {
+export class WorkPlanChannelHandler2 implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
   private pineconeManager: PineconeManager;
   private BOT_ID: string;
@@ -32,35 +31,21 @@ export class IntroductionsChannelHandler implements ChannelHandler {
     }
   }
   private systemPrompt = `
-貴方の名前はTogetherAIBotで、勉強会で来た人たちの自己紹介を聞いてください。
-そしてユーザーに対して他のユーザーとのコラボをおすすめして活動を盛り上げて下さい。
-
-複数人のユーザー(userIdで区別)がいるので、ユーザー名を書く場合は、名前ではなく<@userId>のようにしてください。
-もし自己紹介情報が足りないと考えたら<@userId>をつけてユーザーに聞いて下さい。
-
-例:
-userId: 397363536571138049
-AIについてブログを書いています。よろしくお願いします。
-
-userId: 349671279076311060
-こんにちは、私はsgwです。AIが大好きです
-
-こんにちは<@349671279076311060>さん。AIに興味があるのですね！他の参加者にもゲームが好きな人がいるかもしれませんね。
-履歴を見ると、<@397363536571138049>さんがAIについてブログを書いています。
-よろしければ、情報を交換してみてはいかがでしょうか？よいもくもく勉強会になりますように！
-`;
+今もくもく会が開催され、貴方は参加者に今日のもくもく会ですることを聞いて回っています。
+貴方は参加者が教えてくれる、もくもく会でやろうとしていることをDBに保存して下さい。やろうとしていることは具体的でなくてよいです。ふわっとした抽象的な内容でも構いません。
+貴方は１つの関数(upsertAndGetSimilarUsers)を使用することができます。upsertAndGetSimilarUsers関数はユーザー情報を保存し、その情報に基づいて類似のユーザー情報リストを返します。
+関数がユーザー情報を返したら、返した他のユーザー情報を使ったり、他のユーザーとのコラボをおすすめして活動を盛り上げて下さい。
+ユーザー名を書く場合は、<@userId>のようにしてください。
+  `;
 
   private chatFunctions = [
     {
-      name: "saveUserInformation",
-      description: "ユーザーの情報を保存する.成功したらtrueを返す",
+      name: "upsertAndGetSimilarUsers",
+      description:
+        "ユーザーの情報を保存して、ユーザーに近しい人の情報を取得する",
       parameters: {
         type: "object",
         properties: {
-          userId: {
-            type: "string",
-            description: "userId",
-          },
           content: {
             type: "string",
             description: "ユーザー情報文字列",
@@ -73,7 +58,6 @@ userId: 349671279076311060
 
   private async saveUserInformation(
     message: Message<boolean>,
-    userId: string,
     content: string
   ) {
     const embedding = await this.openAIProcessor.createEmbedding([
@@ -83,7 +67,7 @@ userId: 349671279076311060
     const metadata: MetadataObj = {
       channelId: message.channel.id,
       content: content,
-      author: userId,
+      author: message.author.id,
       createdAt: toUnixTimeStampAtDayLevel(message.createdAt),
     };
 
@@ -93,12 +77,11 @@ userId: 349671279076311060
 
   private async getSimilarUsers(
     embedding: number[],
-    message: Message<boolean>,
-    userId: string
+    message: Message<boolean>
   ) {
     const queryResponse = await this.pineconeManager.querySimilarEmbeddings(
       embedding,
-      userId
+      message.author.id
     );
 
     return queryResponse.matches!.map((match) => {
@@ -107,17 +90,12 @@ userId: 349671279076311060
     });
   }
 
-  async upsertAndGetSimilarUsers(
-    message: Message,
-    userId: string,
-    content: string
-  ) {
-    const embedding = await this.saveUserInformation(message, userId, content);
+  async upsertAndGetSimilarUsers(message: Message, content: string) {
+    const embedding = await this.saveUserInformation(message, content);
 
-    return await this.getSimilarUsers(embedding, message, userId);
+    return await this.getSimilarUsers(embedding, message);
   }
 
-  // function callの処理
   private async handleResponseMessage(
     responseMessage: ChatCompletionResponseMessage | undefined,
     message: Message<boolean>,
@@ -127,22 +105,15 @@ userId: 349671279076311060
       if (responseMessage.function_call.arguments) {
         const name = responseMessage.function_call.name;
         const args = JSON.parse(responseMessage.function_call.arguments) as {
-          userId: string;
           content: string;
         };
-        if (!args.userId) {
-          args.userId = message.author.id;
-        }
-
-        await this.saveUserInformation(message, args.userId, args.content);
-
+        const list = await this.upsertAndGetSimilarUsers(message, args.content);
         requestMessages.push(responseMessage);
         requestMessages.push({
           role: "function",
           name: name,
-          content: JSON.stringify(true),
+          content: JSON.stringify(list),
         });
-
         const response2 =
           await this.openAIProcessor.chatCompletionClient.chatCompletion0613(
             requestMessages
@@ -156,12 +127,7 @@ userId: 349671279076311060
 
   async processMessage(message: Message): Promise<void> {
     try {
-      // このチャンネルのメッセージを取得,10件、3000文字以内
-      const messageList = await fetchMessagesWithinTokenLimit(
-        10,
-        3000,
-        message.channel as TextChannel
-      );
+      const messageList = await fetchReplyChain(this.BOT_ID, message);
       const requestMessages = transformHistoryToRequestMessages(
         this.systemPrompt,
         messageList
