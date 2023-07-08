@@ -3,7 +3,7 @@ import OpenAIConfigurator from "../OpenAI/OpenAIConfigurator";
 import EmbeddingsClient from "../OpenAI/EmbeddingsClient";
 
 export class OpenAIClient {
-  protected chatCompletionClient: ChatCompletionClient;
+  chatCompletionClient: ChatCompletionClient;
   protected embeddingsClient: EmbeddingsClient;
 
   constructor() {

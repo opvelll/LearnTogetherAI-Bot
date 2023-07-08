@@ -1,4 +1,5 @@
 import {
+  ChatCompletionFunctions,
   ChatCompletionRequestMessage,
   ChatCompletionResponseMessage,
   OpenAIApi,
@@ -10,6 +11,41 @@ class ChatCompletionClient {
 
   constructor(openai: OpenAIApi) {
     this.openai = openai;
+  }
+
+  async chatCompletionWithFunction(
+    messages: ChatCompletionRequestMessage[],
+    functions: ChatCompletionFunctions[]
+  ) {
+    logger.info(
+      { messages },
+      "chatCompletionWithFunction message(function_call)"
+    );
+    const response = await this.openai.createChatCompletion({
+      model: "gpt-3.5-turbo-0613",
+      messages,
+      functions,
+    });
+
+    logger.info(
+      { message: response.data.choices[0].message },
+      "Received response message(function_call)"
+    );
+    return response.data.choices[0].message;
+  }
+
+  async chatCompletion0613(messages: ChatCompletionRequestMessage[]) {
+    logger.info({ messages }, "chatCompletion0613 message");
+    const response = await this.openai.createChatCompletion({
+      model: "gpt-3.5-turbo-0613",
+      messages,
+    });
+
+    logger.info(
+      { message: response.data.choices[0].message },
+      "Received chatCompletion0613 response message"
+    );
+    return response.data.choices[0].message;
   }
 
   /**
