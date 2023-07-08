@@ -1,7 +1,5 @@
 import { Interaction } from "discord.js";
-import { DELETE_MY_DATA } from "../command";
-import Pinecone from "../Pinecone/Pinecone";
-import { PineconeClient } from "@pinecone-database/pinecone";
+import { DELETE_ALL, DELETE_MY_DATA } from "../command";
 import logger from "../logger";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 
@@ -28,6 +26,13 @@ export default async function interactionCreateHandler(
           ephemeral: true,
         });
       }
+    }
+    if (commandName === DELETE_ALL) {
+      await pineconeManager.deleteAllData();
+      await interaction.reply({
+        content: "すべてのデータを削除しました。",
+        ephemeral: true,
+      });
     }
   };
 }

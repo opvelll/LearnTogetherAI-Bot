@@ -119,4 +119,21 @@ export class PineconeManager {
 
     return true;
   }
+
+  public async deleteAllData(): Promise<any> {
+    const namespaces = ["self-introduction", "work-plan"];
+
+    for (const namespace of namespaces) {
+      const response = await this.indexOperations.delete1({
+        deleteAll: true,
+        namespace: namespace,
+      });
+      logger.info(
+        { response },
+        `Deleted all pinecone data from namespace: ${namespace}`
+      );
+    }
+
+    return true;
+  }
 }
