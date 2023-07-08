@@ -10,6 +10,7 @@ import { ConfigData } from "./configLoader";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 import { IntroductionsChannelHandler } from "../ChannelHandler/IntroductionsChannelHandler";
 import { WorkPlanChannelHandler2 } from "../ChannelHandler/WorkPlanChannelHandler2";
+import { ResourceTranslationChannelHandler } from "../ChannelHandler/ResourceTranslationChannelHandler";
 
 export default function initChannelActions(
   openAIProcessor: OpenAIProcessor,
@@ -20,6 +21,7 @@ export default function initChannelActions(
     CHANNEL_ID_WORK_PLAN,
     CHANNEL_ID_WORK_PLAN2,
     CHANNEL_ID_SELF_INTRO,
+    CHANNEL_ID_TRANSLATION,
   }: ConfigData
 ) {
   const channelActions = new Map<string, ChannelHandler>();
@@ -58,5 +60,13 @@ export default function initChannelActions(
       new WorkPlanChannelHandler2(openAIProcessor, pineconeManager)
     );
   }
+
+  if (CHANNEL_ID_TRANSLATION) {
+    channelActions.set(
+      CHANNEL_ID_TRANSLATION,
+      new ResourceTranslationChannelHandler(openAIProcessor)
+    );
+  }
+
   return channelActions;
 }

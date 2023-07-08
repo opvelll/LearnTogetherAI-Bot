@@ -6,6 +6,7 @@ export type ConfigData = {
   CHANNEL_ID_WORK_PLAN: string | undefined;
   CHANNEL_ID_WORK_PLAN2: string | undefined;
   CHANNEL_ID_SELF_INTRO: string | undefined;
+  CHANNEL_ID_TRANSLATION: string | undefined;
 
   PINECONE_INDEX_NAME: string;
   PINECONE_ENVIRONMENT: string;
@@ -22,6 +23,7 @@ export function configLoader(): ConfigData {
     CHANNEL_ID_WORK_PLAN,
     CHANNEL_ID_WORK_PLAN2,
     CHANNEL_ID_SELF_INTRO,
+    CHANNEL_ID_TRANSLATION,
 
     PINECONE_INDEX_NAME,
     PINECONE_ENVIRONMENT,
@@ -36,7 +38,8 @@ export function configLoader(): ConfigData {
     !CHANNEL_ID_QUESTION &&
     !CHANNEL_ID_WORK_PLAN &&
     !CHANNEL_ID_SELF_INTRO &&
-    !CHANNEL_ID_WORK_PLAN2
+    !CHANNEL_ID_WORK_PLAN2 &&
+    !CHANNEL_ID_TRANSLATION
   ) {
     const errorMessage =
       "None of the required environment variables are set.(channel id)";
@@ -69,9 +72,12 @@ export function configLoader(): ConfigData {
     CHANNEL_ID_WORK_PLAN,
     CHANNEL_ID_WORK_PLAN2,
     CHANNEL_ID_SELF_INTRO,
+    CHANNEL_ID_TRANSLATION,
+
     PINECONE_INDEX_NAME,
     PINECONE_ENVIRONMENT,
     PINECONE_API_KEY,
+
     OPENAI_ORGANIZATION_ID,
     OPENAI_API_KEY,
   };

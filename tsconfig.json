@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -8,7 +9,8 @@
     "strict": true,
     "target": "ES2020",
     "lib": ["es2020", "ESNext"],
-    "incremental": true
+    "incremental": true,
+    "typeRoots": ["./types", "./node_modules/@types"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*.ts", "*.d.ts", "types/**/*.d.ts"]
 }
