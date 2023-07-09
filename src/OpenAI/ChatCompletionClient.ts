@@ -48,6 +48,28 @@ class ChatCompletionClient {
     return response.data.choices[0].message;
   }
 
+  // 16,384 tokens
+  async chatCompletion16k(
+    messages: ChatCompletionRequestMessage[]
+  ): Promise<ChatCompletionResponseMessage> {
+    logger.info({ messages }, "chatCompletion16k message");
+    const response = await this.openai.createChatCompletion({
+      model: "gpt-3.5-turbo-16k",
+      messages,
+    });
+
+    logger.info(
+      { message: response.data.choices[0].message },
+      "Received chatCompletion16k response message"
+    );
+
+    if (!response.data.choices[0].message) {
+      throw new Error("response.data.choices[0].message == undefined");
+    }
+
+    return response.data.choices[0].message;
+  }
+
   /**
    * Calls the ChatCompletion API.
    * @param messages The messages to be sent to the ChatCompletion API.

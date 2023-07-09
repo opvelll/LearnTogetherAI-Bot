@@ -25,7 +25,7 @@ export class ResourceTranslationChannelHandler implements ChannelHandler {
 
   async process(message: Message) {
     const urls = this.extractUrls(message.content);
-    const MAX_TOKENS = 3300;
+    const MAX_TOKENS = 9000;
     let tokeCount = 0;
     let texts = "";
 
@@ -47,9 +47,10 @@ export class ResourceTranslationChannelHandler implements ChannelHandler {
         logger.info({ title, content }, "result");
         texts = `
 ${texts}
-
-${title}
-${content.slice(0, MAX_TOKENS - tokeCount)}
+\`\`\`
+title: ${title}
+content: ${content.slice(0, MAX_TOKENS - tokeCount)}
+\`\`\`
 `;
       }
 
@@ -66,7 +67,7 @@ ${content.slice(0, MAX_TOKENS - tokeCount)}
       ] as ChatCompletionRequestMessage[];
 
       const responseMessage =
-        await this.openAIProcessor.chatCompletionClient.chatCompletion(
+        await this.openAIProcessor.chatCompletionClient.chatCompletion16k(
           chatCompletionMessages
         );
 
