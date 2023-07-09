@@ -10,6 +10,8 @@ ChatGPT を活用したもくもく会をサポートする Discord ボットで
 
 現在、これは試作品であり、開発中です。
 
+https://discord.gg/jCFq2ZKp
+
 ### チャンネル
 
 - Greeting(挨拶): ChatGPT と一言挨拶する(履歴を読まない)
@@ -153,6 +155,7 @@ AWS Lightsail の場合
 ```sh
 pm2 stop mybot
 git pull
+npm install
 npm run build
 npm run register
 pm2 start mybot
