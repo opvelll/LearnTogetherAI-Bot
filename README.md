@@ -2,18 +2,26 @@
 
 ChatGPT を活用したもくもく会をサポートする Discord ボットです。
 
-## 機能
+## 概要
+
+- **ChatGPT との対話**: ChatGPT が質問に答える、または挨拶をします。
+- **翻訳**: リンクが貼られたら ChatGPT が翻訳します。
+- **コラボレーション提案**: 参加者が自己紹介をしたり、取り組んでいることを共有すると、ChatGPT が同じような関心を持つ人とのコラボレーションを提案します。（この機能は少し鬱陶しいかもしれません）
+
+現在、これは試作品であり、開発中です。
 
 ### チャンネル
 
-- **ChatGPT との対話**: ChatGPT が質問に答える、または挨拶をします。
-- **コラボレーション提案**: 参加者が自己紹介をしたり、取り組んでいることを共有すると、ChatGPT が同じような関心を持つ人とのコラボレーションを提案します。（この機能は少し鬱陶しいかもしれません）
+- Greeting(挨拶): ChatGPT と一言挨拶する(履歴を読まない)
+- ResorceTranslation(情報共有): 英語のメッセージやリンクがチャンネルに貼られた場合、リンク先のページのタイトルや内容の一部(3000 文字)を抽出し、それを要約および翻訳します。ただし、Twitter のような JavaScript を使用するウェブサイトは対応していません。
+- Question(質問): チャンネルの履歴を読みながら質問に答えます。
+- Introductions(自己紹介): ChatGPT がチャンネルの履歴を読んで同じような関心を持つユーザーをおすすめします。
+- WorkPlan(作業計画): 書き込まれたもくもく会ですることを DB に保存、DB の中から似た内容を検索、検索結果から同じような関心を持つユーザーをおすすめする。
+- WorkPlan2(作業計画): ここでは ChatGPT の機能呼び出しを使用します。ChatGPT が自動的に書き込まれたもくもく会の計画を判断し、DB に保存します。存されたデータから類似した内容を持つユーザーをおすすめします。（このチャンネルだけ BOT にリプライすると会話が続きます。）
 
 ### スラッシュコマンド
 
-- /delete_mydata :DB に保存されたユーザーのデータを消去します。
-
-現在、これは試作品であり、開発中です。
+- /delete_mydata :DB に保存されたユーザーのデータをすべて消去します。
 
 ## 自分の Discord サーバーで Bot を動かす
 
@@ -29,7 +37,7 @@ cd LearnTogetherAI-Bot
 ### 2. 自分管理の Discord サーバーを２つ立てる。
 
 自分が管理する Discord サーバーを 2 つ用意します（本番用とテスト用）。
-そして今のところ三種類チャンネルがあるのでほしいチャンネルを作成します。一言チャンネル、質問チャンネル、検索チャンネル。
+そしてほしいチャンネルを作成します。例えば、挨拶チャンネル、質問チャンネル、今日やることチャンネル。
 
 ### 3. .env ファイルを作成する。
 
@@ -39,7 +47,7 @@ cd LearnTogetherAI-Bot
 ```env
 DISCORD_TOKEN=
 DISCORD_APPLICATION_ID=
-DISCORD_PUBLIC_KEY=
+DISCORD_CLIENT_ID=
 
 OPENAI_API_KEY=
 OPENAI_ORGANIZATION_ID=
@@ -47,12 +55,11 @@ OPENAI_ORGANIZATION_ID=
 CHANNEL_ID_GREETING=
 CHANNEL_ID_QUESTION=
 CHANNEL_ID_WORK_PLAN=
+CHANNEL_ID_WORK_PLAN2=
 
 PINECONE_API_KEY=
 PINECONE_ENVIRONMENT=
 PINECONE_INDEX_NAME=
-PINECONE_INDEX_DIM=
-PINECONE_INDEX_METRIC=
 ```
 
 OpenAI や Pinecone の設定部分は使い回します。
@@ -69,7 +76,7 @@ Discord Developer Portal で 2 つの新しいアプリケーションを作成�
 ```env
 DISCORD_TOKEN=
 DISCORD_APPLICATION_ID=
-DISCORD_PUBLIC_KEY=
+DISCORD_CLIENT_ID=
 ```
 
 ### 5. ボットを Discord サーバーに登録する
