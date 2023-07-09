@@ -4,10 +4,7 @@ import logger from "../logger";
 import { ChatCompletionRequestMessage } from "openai";
 import * as cheerio from "cheerio";
 import fetch from "node-fetch";
-
-export interface ChannelHandler {
-  handle(message: Message): void;
-}
+import { ChannelHandler } from "./ChannelHandler";
 
 export class ResourceTranslationChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
@@ -32,11 +29,12 @@ export class ResourceTranslationChannelHandler implements ChannelHandler {
     let tokeCount = 0;
     let texts = "";
 
-    // url以外のテキストがあった場合それも翻訳する
+    // url以外のテキスト、またはメッセージのみがあった場合それも翻訳する
     if (urls[0] !== message.content) {
       texts = message.content;
       tokeCount = message.content.length;
     }
+
     try {
       // urlがあった場合はスクレイピングしてテキストを取得する
       if (urls.length !== 0) {

@@ -15,7 +15,7 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "dev": "NODE_ENV=dev ts-node-dev --project tsconfig.json ./src/index.ts",
+    "dev": "NODE_ENV=dev ts-node-dev ./src/index.ts",
     "build": "tsc --build",
     "register:dev": "tsc --build && NODE_ENV=dev node ./build/register-command.js",
     "register": "node ./build/register-command.js",

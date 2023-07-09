@@ -1,6 +1,6 @@
 import { Message, TextChannel } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-import { ChannelHandler } from "./GreetingChannelHandler";
+import { ChannelHandler } from "./ChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 
 import logger from "../logger";
@@ -8,10 +8,6 @@ import {
   fetchMessagesWithinTokenLimit,
   transformHistoryToRequestMessages,
 } from "./chatHistoryProcessor";
-import {
-  ChatCompletionRequestMessage,
-  ChatCompletionResponseMessage,
-} from "openai";
 
 export class IntroductionsChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
@@ -44,9 +40,9 @@ userId: 349671279076311060
 
   async processMessage(message: Message): Promise<void> {
     try {
-      // このチャンネルのメッセージを取得,10件、3000文字以内
+      // このチャンネルのメッセージを取得,80件、3000文字以内
       const messageList = await fetchMessagesWithinTokenLimit(
-        10,
+        80,
         3000,
         message.channel as TextChannel
       );

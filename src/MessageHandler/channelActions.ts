@@ -1,7 +1,5 @@
-import {
-  ChannelHandler,
-  GreetingChannelHandler,
-} from "../ChannelHandler/GreetingChannelHandler";
+import { GreetingChannelHandler } from "../ChannelHandler/GreetingChannelHandler";
+import { ChannelHandler } from "../ChannelHandler/ChannelHandler";
 import { WorkPlanChannelHandler } from "../ChannelHandler/WorkPlanChannelHandler";
 import { QuestionChannelHandler } from "../ChannelHandler/QuestionChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
@@ -15,57 +13,28 @@ import { ResourceTranslationChannelHandler } from "../ChannelHandler/ResourceTra
 export default function initChannelActions(
   openAIProcessor: OpenAIProcessor,
   pineconeManager: PineconeManager,
-  {
-    CHANNEL_ID_GREETING,
-    CHANNEL_ID_QUESTION,
-    CHANNEL_ID_WORK_PLAN,
-    CHANNEL_ID_WORK_PLAN2,
-    CHANNEL_ID_SELF_INTRO,
-    CHANNEL_ID_TRANSLATION,
-  }: ConfigData
+  config: ConfigData
 ) {
   const channelActions = new Map<string, ChannelHandler>();
 
-  if (CHANNEL_ID_GREETING) {
-    channelActions.set(
-      CHANNEL_ID_GREETING,
-      new GreetingChannelHandler(openAIProcessor)
-    );
-  }
+  const handlers: { [key: string]: () => ChannelHandler } = {
+    CHANNEL_ID_GREETING: () => new GreetingChannelHandler(openAIProcessor),
+    CHANNEL_ID_QUESTION: () => new QuestionChannelHandler(openAIProcessor),
+    CHANNEL_ID_SELF_INTRO: () =>
+      new IntroductionsChannelHandler(openAIProcessor, pineconeManager),
+    CHANNEL_ID_WORK_PLAN: () =>
+      new WorkPlanChannelHandler(openAIProcessor, pineconeManager),
+    CHANNEL_ID_WORK_PLAN2: () =>
+      new WorkPlanChannelHandler2(openAIProcessor, pineconeManager),
+    CHANNEL_ID_TRANSLATION: () =>
+      new ResourceTranslationChannelHandler(openAIProcessor),
+  };
 
-  if (CHANNEL_ID_QUESTION) {
-    channelActions.set(
-      CHANNEL_ID_QUESTION,
-      new QuestionChannelHandler(openAIProcessor)
-    );
-  }
-
-  if (CHANNEL_ID_SELF_INTRO) {
-    channelActions.set(
-      CHANNEL_ID_SELF_INTRO,
-      new IntroductionsChannelHandler(openAIProcessor, pineconeManager)
-    );
-  }
-
-  if (CHANNEL_ID_WORK_PLAN) {
-    channelActions.set(
-      CHANNEL_ID_WORK_PLAN,
-      new WorkPlanChannelHandler(openAIProcessor, pineconeManager)
-    );
-  }
-
-  if (CHANNEL_ID_WORK_PLAN2) {
-    channelActions.set(
-      CHANNEL_ID_WORK_PLAN2,
-      new WorkPlanChannelHandler2(openAIProcessor, pineconeManager)
-    );
-  }
-
-  if (CHANNEL_ID_TRANSLATION) {
-    channelActions.set(
-      CHANNEL_ID_TRANSLATION,
-      new ResourceTranslationChannelHandler(openAIProcessor)
-    );
+  for (const key in handlers) {
+    const channelId = config[key];
+    if (channelId) {
+      channelActions.set(channelId, handlers[key]());
+    }
   }
 
   return channelActions;

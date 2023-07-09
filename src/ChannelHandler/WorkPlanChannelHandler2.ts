@@ -1,6 +1,6 @@
 import { Message } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-import { ChannelHandler } from "./GreetingChannelHandler";
+import { ChannelHandler } from "./ChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 import { MetadataObj } from "../Pinecone/MetadataObj";
 import { toUnixTimeStampAtDayLevel } from "../Pinecone/dateUtils";

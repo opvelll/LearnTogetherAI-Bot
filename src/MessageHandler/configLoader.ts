@@ -1,6 +1,7 @@
 import logger from "../logger";
 
 export type ConfigData = {
+  [key: string]: any;
   CHANNEL_ID_GREETING: string | undefined;
   CHANNEL_ID_QUESTION: string | undefined;
   CHANNEL_ID_WORK_PLAN: string | undefined;
@@ -32,7 +33,8 @@ export function configLoader(): ConfigData {
     OPENAI_ORGANIZATION_ID,
     OPENAI_API_KEY,
   } = process.env;
-  // すべての環境変数が設定されていない場合はエラーを投げる
+
+  // どれか一つでも環境変数が設定されていなければエラーを投げる
   if (
     !CHANNEL_ID_GREETING &&
     !CHANNEL_ID_QUESTION &&

@@ -1,9 +1,6 @@
 import { Message } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-
-export interface ChannelHandler {
-  handle(message: Message): void;
-}
+import { ChannelHandler } from "./ChannelHandler";
 
 export class GreetingChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;

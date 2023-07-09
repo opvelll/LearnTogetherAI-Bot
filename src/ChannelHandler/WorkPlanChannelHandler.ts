@@ -1,6 +1,6 @@
 import { Message } from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
-import { ChannelHandler } from "./GreetingChannelHandler";
+import { ChannelHandler } from "./ChannelHandler";
 import logger from "../logger";
 import { QueryResponse } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch";
 import { PineconeManager } from "../Pinecone/PineconeManager";

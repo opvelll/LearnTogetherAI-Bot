@@ -1,6 +1,6 @@
 import { ChannelType, Message } from "discord.js";
 import logger from "../logger";
-import { ChannelHandler } from "../ChannelHandler/GreetingChannelHandler";
+import { ChannelHandler } from "../ChannelHandler/ChannelHandler";
 
 export default function messageHandler(
   channelActions: Map<string, ChannelHandler>

@@ -1,5 +1,5 @@
 import { Message, TextChannel } from "discord.js";
-import { ChannelHandler } from "./GreetingChannelHandler";
+import { ChannelHandler } from "./ChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import logger from "../logger";
 import { fetchMessagesWithinTokenLimit } from "./chatHistoryProcessor";
