@@ -42,7 +42,7 @@ userId: 349671279076311060
     try {
       // このチャンネルのメッセージを取得,80件、3000文字以内
       const messageList = await fetchMessagesWithinTokenLimit(
-        80,
+        10,
         3000,
         message.channel as TextChannel
       );
