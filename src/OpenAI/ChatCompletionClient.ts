@@ -80,7 +80,7 @@ class ChatCompletionClient {
     messages: ChatCompletionRequestMessage[]
   ): Promise<ChatCompletionResponseMessage> {
     try {
-      logger.info({ messages }, "Starting API call");
+      logger.info({ messages }, "Chat GPT 3.5 API call");
 
       // Send a request to the OpenAI API
       const response = await this.openai.createChatCompletion({

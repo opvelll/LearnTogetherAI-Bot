@@ -2,7 +2,7 @@ import { Message, TextChannel } from "discord.js";
 import { ChannelHandler } from "./ChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import logger from "../logger";
-import { fetchMessagesWithinTokenLimit } from "./chatHistoryProcessor";
+import { fetchMessagesWithinTokenLimit } from "./Service/chatHistoryProcessor";
 
 const MAX_TOKENS = 3000;
 

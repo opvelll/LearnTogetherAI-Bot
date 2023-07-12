@@ -7,7 +7,7 @@ import logger from "../logger";
 import {
   fetchMessagesWithinTokenLimit,
   transformHistoryToRequestMessages,
-} from "./chatHistoryProcessor";
+} from "./Service/chatHistoryProcessor";
 
 export class IntroductionsChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;

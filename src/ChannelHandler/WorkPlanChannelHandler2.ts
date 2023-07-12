@@ -1,4 +1,11 @@
-import { Message } from "discord.js";
+import {
+  BaseGuildTextChannel,
+  ChannelType,
+  Collection,
+  Message,
+  NonThreadGuildBasedChannel,
+  TextChannel,
+} from "discord.js";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./ChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
@@ -8,7 +15,7 @@ import logger from "../logger";
 import {
   fetchReplyChain,
   transformHistoryToRequestMessages,
-} from "./chatHistoryProcessor";
+} from "./Service/chatHistoryProcessor";
 import {
   ChatCompletionRequestMessage,
   ChatCompletionResponseMessage,

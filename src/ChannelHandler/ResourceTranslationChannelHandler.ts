@@ -6,6 +6,8 @@ import * as cheerio from "cheerio";
 import fetch from "node-fetch";
 import { ChannelHandler } from "./ChannelHandler";
 
+// このチャンネルハンドラは、メッセージにURLが含まれていた場合、そのURLのページをスクレイピングして、
+// そのページのタイトルと本文をOpenAIに投げて、日本語に翻訳して返す。
 export class ResourceTranslationChannelHandler implements ChannelHandler {
   private openAIProcessor: OpenAIProcessor;
   private systemPrompt: string = `

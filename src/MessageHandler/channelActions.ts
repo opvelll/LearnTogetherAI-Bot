@@ -9,6 +9,7 @@ import { PineconeManager } from "../Pinecone/PineconeManager";
 import { IntroductionsChannelHandler } from "../ChannelHandler/IntroductionsChannelHandler";
 import { WorkPlanChannelHandler2 } from "../ChannelHandler/WorkPlanChannelHandler2";
 import { ResourceTranslationChannelHandler } from "../ChannelHandler/ResourceTranslationChannelHandler";
+import { ChannelSuggestions } from "../ChannelHandler/ChannelSuggestions";
 
 export default function initChannelActions(
   openAIProcessor: OpenAIProcessor,
@@ -25,7 +26,7 @@ export default function initChannelActions(
     CHANNEL_ID_WORK_PLAN: () =>
       new WorkPlanChannelHandler(openAIProcessor, pineconeManager),
     CHANNEL_ID_WORK_PLAN2: () =>
-      new WorkPlanChannelHandler2(openAIProcessor, pineconeManager),
+      new ChannelSuggestions(openAIProcessor, pineconeManager),
     CHANNEL_ID_TRANSLATION: () =>
       new ResourceTranslationChannelHandler(openAIProcessor),
   };
