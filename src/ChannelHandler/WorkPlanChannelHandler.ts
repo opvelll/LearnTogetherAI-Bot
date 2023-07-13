@@ -4,7 +4,10 @@ import { ChannelHandler } from "./ChannelHandler";
 import logger from "../logger";
 import { QueryResponse } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch";
 import { PineconeManager } from "../Pinecone/PineconeManager";
-import { ChatCompletionResponseMessage } from "openai";
+import {
+  ChatCompletionRequestMessage,
+  ChatCompletionResponseMessage,
+} from "openai";
 import { toUnixTimeStampAtDayLevel } from "../Pinecone/dateUtils";
 import { MetadataObj } from "../Pinecone/MetadataObj";
 
@@ -18,6 +21,50 @@ export class WorkPlanChannelHandler implements ChannelHandler {
   ) {
     this.openAIProcessor = openAIProcessor;
     this.pineconeManager = pineconeManager;
+  }
+
+  private buildContextPrompt(context: MetadataObj[]): string {
+    return context
+      .map(
+        ({ author, content, createdAt }) =>
+          `
+---
+date: ${new Date(createdAt).toLocaleDateString()} 
+userId: ${author} 
+${content}
+---`
+      )
+      .join("\n");
+  }
+
+  async chatCompletionFromUserWorkPlan(
+    userId: string,
+    userInput: string,
+    systemPrompt: string,
+    context: MetadataObj[]
+  ) {
+    const contextPrompt = this.buildContextPrompt(context);
+
+    const prompts = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: `
+userId: ${userId}
+${userInput} 
+
+[システムからの挿入: 以下を参考に]:
+${contextPrompt} 
+
+`,
+      },
+    ] as ChatCompletionRequestMessage[];
+    return await this.openAIProcessor.chatCompletionClient.chatCompletion(
+      prompts
+    );
   }
 
   /**
@@ -36,11 +83,8 @@ export class WorkPlanChannelHandler implements ChannelHandler {
    */
   private buildContextFromQueryResponse(
     queryResponse: QueryResponse
-  ): [string, string, Date][] {
-    return queryResponse.matches!.map((match) => {
-      const { author, content, createdAt } = match.metadata as MetadataObj;
-      return [author, content, new Date(createdAt)];
-    });
+  ): MetadataObj[] {
+    return queryResponse.matches!.map((match) => match.metadata as MetadataObj);
   }
 
   /**
@@ -51,11 +95,31 @@ export class WorkPlanChannelHandler implements ChannelHandler {
    */
   private async generateGptResponse(
     message: Message,
-    context: [string, string, Date][]
+    context: MetadataObj[]
   ): Promise<ChatCompletionResponseMessage> {
-    return this.openAIProcessor.chatCompletionFromUserWorkPlan(
+    const systemPrompt = `
+ユーザーの発言とその発言に近いユーザー情報を貼ります。
+この情報を必要なら使い、もくもく会での共有、つながり、学習を促して下さい。
+ユーザー名を書く場合は、<@userId>のようにしてください。
+
+例:
+userId: 349671279076311060
+こんにちは、AAです。よろしくお願いします。今日はUnityでゲームを作ります。
+
+[システムの挿入]
+userId: 397363536571138049
+よろしくBBです。今日はシェーダープログラミングの勉強をします。
+
+...
+
+こんにちは<@349671279076311060>さん。Unityを使ったゲームづくりに興味があるのですね！
+他の参加者の自己紹介情報を見ると、<@397363536571138049>さんがシェーダープログラミングの勉強をしています。
+よろしければ、情報を交換してみてはいかがでしょうか？よいもくもく勉強会になりますように！
+`;
+    return this.chatCompletionFromUserWorkPlan(
       message.author.id,
       message.content,
+      systemPrompt,
       context
     );
   }

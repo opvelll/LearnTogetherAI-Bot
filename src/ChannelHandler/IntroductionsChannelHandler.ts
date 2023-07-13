@@ -6,6 +6,7 @@ import { PineconeManager } from "../Pinecone/PineconeManager";
 import logger from "../logger";
 import {
   fetchMessagesWithinTokenLimit,
+  fetchUserAndBotMessages,
   transformHistoryToRequestMessages,
 } from "./Service/chatHistoryProcessor";
 
@@ -20,32 +21,14 @@ export class IntroductionsChannelHandler implements ChannelHandler {
     this.pineconeManager = pineconeManager;
   }
   private systemPrompt = `
-貴方の名前はTogetherAIBotで、勉強会で来た人たちの自己紹介を聞いてください。
-そしてユーザーに対して他のユーザーとのコラボをおすすめして活動を盛り上げて下さい。
-
-複数人のユーザー(userIdで区別)がいるので、ユーザー名を書く場合は、名前ではなく<@userId>のようにしてください。
-もし自己紹介情報が足りないと考えたら<@userId>をつけてユーザーに聞いて下さい。
-
-例:
-userId: 397363536571138049
-AIについてブログを書いています。よろしくお願いします。
-
-userId: 349671279076311060
-こんにちは、私はsgwです。AIが大好きです
-
-こんにちは<@349671279076311060>さん。AIに興味があるのですね！他の参加者にもゲームが好きな人がいるかもしれませんね。
-履歴を見ると、<@397363536571138049>さんがAIについてブログを書いています。
-よろしければ、情報を交換してみてはいかがでしょうか？よいもくもく勉強会になりますように！
+貴方の名前はTogetherAIBotで、勉強会で来た人たちの自己紹介を聞いてそれにあったもくもく会での勉強の仕方を簡単、簡潔に提案して下さい。
+ユーザー名を書く場合は、<@userId>のように書いて下さい。<@123456>のように。
 `;
 
   async processMessage(message: Message): Promise<void> {
     try {
-      // このチャンネルのメッセージを取得,80件、3000文字以内
-      const messageList = await fetchMessagesWithinTokenLimit(
-        10,
-        3000,
-        message.channel as TextChannel
-      );
+      // ユーザーとボットの会話メッセージを取得する
+      const messageList = await fetchUserAndBotMessages(10, message);
       const requestMessages = transformHistoryToRequestMessages(
         this.systemPrompt,
         messageList

@@ -2,7 +2,11 @@ import { Message, TextChannel } from "discord.js";
 import { ChannelHandler } from "./ChannelHandler";
 import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import logger from "../logger";
-import { fetchMessagesWithinTokenLimit } from "./Service/chatHistoryProcessor";
+import {
+  fetchMessagesWithinTokenLimit,
+  fetchUserAndBotMessages,
+} from "./Service/chatHistoryProcessor";
+import { ChatCompletionRequestMessage } from "openai";
 
 const MAX_TOKENS = 3000;
 
@@ -13,22 +17,49 @@ export class QuestionChannelHandler implements ChannelHandler {
     this.chatManager = chatManager;
   }
 
+  async chatCompletionFromQuestionWithChannelHistory(
+    messages: Message<boolean>[]
+  ) {
+    const todayDate = new Date().toLocaleDateString();
+    const systemPrompt = `
+貴方はAI勉強会会場にいる想像力豊かで、色々なことに興味を持つ良き相談役です。
+ユーザーの質問に簡潔に答えてください。
+今日の日付は${todayDate}です。`;
+
+    const messagesFromChannelHistory = messages.map((message) => {
+      if (message.author.bot) {
+        return {
+          role: "assistant",
+          content: message.content,
+        };
+      } else {
+        return {
+          role: "user",
+          content: message.content,
+        };
+      }
+    });
+    const prompts = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      ...messagesFromChannelHistory,
+    ] as ChatCompletionRequestMessage[];
+    return await this.chatManager.chatCompletionClient.chatCompletion(prompts);
+  }
+
   async processMessageForChannel(message: Message) {
     try {
       // チャンネルを取得
       const channel = message.channel as TextChannel;
 
       // MAX_TOKENSトークンを超えないメッセージのリストを取得
-      const list = await fetchMessagesWithinTokenLimit(
-        100,
-        MAX_TOKENS,
-        channel
-      );
+      const list = await fetchUserAndBotMessages(10, message);
 
-      const response =
-        await this.chatManager.chatCompletionFromQuestionWithChannelHistory(
-          list
-        );
+      const response = await this.chatCompletionFromQuestionWithChannelHistory(
+        list
+      );
       await message.reply(response);
     } catch (error) {
       logger.error(error, "Error processing message for question channel: ");
