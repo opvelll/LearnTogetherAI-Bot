@@ -1,7 +1,10 @@
 import { CreateEmbeddingResponse, OpenAIApi } from "openai";
+import ChatCompletionClient from "./ChatCompletionClient";
 
-class EmbeddingsClient {
-  constructor(private openai: OpenAIApi) {}
+class EmbeddingsClient extends ChatCompletionClient {
+  constructor(openai: OpenAIApi) {
+    super(openai);
+  }
 
   async createEmbedding(texts: string[]): Promise<number[]> {
     const response = await this.openai.createEmbedding({

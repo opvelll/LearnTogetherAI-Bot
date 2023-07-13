@@ -1,12 +1,4 @@
-import {
-  BaseGuildTextChannel,
-  ChannelType,
-  Collection,
-  Message,
-  NonThreadGuildBasedChannel,
-  TextChannel,
-} from "discord.js";
-import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
+import { Message } from "discord.js";
 import { ChannelHandler } from "./ChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 import { MetadataObj } from "../Pinecone/MetadataObj";
@@ -20,16 +12,14 @@ import {
   ChatCompletionRequestMessage,
   ChatCompletionResponseMessage,
 } from "openai";
+import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 export class WorkPlanChannelHandler2 implements ChannelHandler {
-  private openAIProcessor: OpenAIProcessor;
+  private openAIManager: OpenAIManager;
   private pineconeManager: PineconeManager;
   private BOT_ID: string;
-  constructor(
-    openAIProcessor: OpenAIProcessor,
-    pineconeManager: PineconeManager
-  ) {
-    this.openAIProcessor = openAIProcessor;
+  constructor(openAIManager: OpenAIManager, pineconeManager: PineconeManager) {
+    this.openAIManager = openAIManager;
     this.pineconeManager = pineconeManager;
     if (!process.env.DISCORD_CLIENT_ID) {
       throw Error("DISCORD_CLIENT_ID is not defined");
@@ -69,7 +59,7 @@ export class WorkPlanChannelHandler2 implements ChannelHandler {
     message: Message<boolean>,
     content: string
   ) {
-    const embedding = await this.openAIProcessor.createEmbedding([
+    const embedding = await this.openAIManager.createEmbedding([
       message.content,
     ]);
 
@@ -123,10 +113,9 @@ export class WorkPlanChannelHandler2 implements ChannelHandler {
           name: name,
           content: JSON.stringify(list),
         });
-        const response2 =
-          await this.openAIProcessor.chatCompletionClient.chatCompletion0613(
-            requestMessages
-          );
+        const response2 = await this.openAIManager.chatCompletion0613(
+          requestMessages
+        );
         message.reply(response2!.content!);
       }
     } else {
@@ -143,7 +132,7 @@ export class WorkPlanChannelHandler2 implements ChannelHandler {
       );
 
       const responseMessage =
-        await this.openAIProcessor.chatCompletionClient.chatCompletionWithFunction(
+        await this.openAIManager.chatCompletionWithFunction(
           requestMessages,
           this.chatFunctions
         );

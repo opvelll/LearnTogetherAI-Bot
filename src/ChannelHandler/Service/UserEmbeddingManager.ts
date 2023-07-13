@@ -1,17 +1,14 @@
 import { Message } from "discord.js";
-import OpenAIProcessor from "../../OpenAIProcessor/OpenAIProcessor";
 import { PineconeManager } from "../../Pinecone/PineconeManager";
 import { MetadataObj } from "../../Pinecone/MetadataObj";
 import { toUnixTimeStampAtDayLevel } from "../../Pinecone/dateUtils";
+import { OpenAIManager } from "../../OpenAI/OpenAIManager";
 
 export class UserEmbeddingManager {
-  private openAIProcessor: OpenAIProcessor;
+  private openAIManager: OpenAIManager;
   private pineconeManager: PineconeManager;
-  constructor(
-    openAIProcessor: OpenAIProcessor,
-    pineconeManager: PineconeManager
-  ) {
-    this.openAIProcessor = openAIProcessor;
+  constructor(openAIManager: OpenAIManager, pineconeManager: PineconeManager) {
+    this.openAIManager = openAIManager;
     this.pineconeManager = pineconeManager;
   }
 
@@ -20,7 +17,7 @@ export class UserEmbeddingManager {
     message: Message<boolean>,
     content: string
   ) {
-    const embedding = await this.openAIProcessor.createEmbedding([
+    const embedding = await this.openAIManager.createEmbedding([
       message.content,
     ]);
 

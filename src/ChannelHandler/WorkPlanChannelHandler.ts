@@ -1,5 +1,4 @@
 import { Message } from "discord.js";
-import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./ChannelHandler";
 import logger from "../logger";
 import { QueryResponse } from "@pinecone-database/pinecone/dist/pinecone-generated-ts-fetch";
@@ -10,16 +9,14 @@ import {
 } from "openai";
 import { toUnixTimeStampAtDayLevel } from "../Pinecone/dateUtils";
 import { MetadataObj } from "../Pinecone/MetadataObj";
+import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 export class WorkPlanChannelHandler implements ChannelHandler {
-  private openAIProcessor: OpenAIProcessor;
+  private openAIManager: OpenAIManager;
   private pineconeManager: PineconeManager;
 
-  constructor(
-    openAIProcessor: OpenAIProcessor,
-    pineconeManager: PineconeManager
-  ) {
-    this.openAIProcessor = openAIProcessor;
+  constructor(openAIManager: OpenAIManager, pineconeManager: PineconeManager) {
+    this.openAIManager = openAIManager;
     this.pineconeManager = pineconeManager;
   }
 
@@ -62,9 +59,7 @@ ${contextPrompt}
 `,
       },
     ] as ChatCompletionRequestMessage[];
-    return await this.openAIProcessor.chatCompletionClient.chatCompletion(
-      prompts
-    );
+    return await this.openAIManager.chatCompletion(prompts);
   }
 
   /**
@@ -73,7 +68,7 @@ ${contextPrompt}
    * @returns The embedding.
    */
   private async getEmbedding(message: Message): Promise<any> {
-    return this.openAIProcessor.createEmbedding([message.content]);
+    return this.openAIManager.createEmbedding([message.content]);
   }
 
   /**

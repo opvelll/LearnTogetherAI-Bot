@@ -1,21 +1,21 @@
 import { Message, PresenceManager } from "discord.js";
-import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import logger from "../logger";
 import { ChatCompletionRequestMessage } from "openai";
 import * as cheerio from "cheerio";
 import fetch from "node-fetch";
 import { ChannelHandler } from "./ChannelHandler";
+import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 // このチャンネルハンドラは、メッセージにURLが含まれていた場合、そのURLのページをスクレイピングして、
 // そのページのタイトルと本文をOpenAIに投げて、日本語に翻訳して返す。
 export class ResourceTranslationChannelHandler implements ChannelHandler {
-  private openAIProcessor: OpenAIProcessor;
+  private openAIManager: OpenAIManager;
   private systemPrompt: string = `
   I will give you the text, please summarize and translate it into Japanese.
   `;
 
-  constructor(openAIProcessor: OpenAIProcessor) {
-    this.openAIProcessor = openAIProcessor;
+  constructor(openAIManager: OpenAIManager) {
+    this.openAIManager = openAIManager;
   }
 
   // urlを抽出する関数
@@ -68,10 +68,9 @@ content: ${content.slice(0, MAX_TOKENS - tokeCount)}
         },
       ] as ChatCompletionRequestMessage[];
 
-      const responseMessage =
-        await this.openAIProcessor.chatCompletionClient.chatCompletion16k(
-          chatCompletionMessages
-        );
+      const responseMessage = await this.openAIManager.chatCompletion16k(
+        chatCompletionMessages
+      );
 
       message.reply(responseMessage.content!);
     } catch (error) {

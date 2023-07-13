@@ -1,19 +1,19 @@
 import { Message, TextChannel } from "discord.js";
 import { ChannelHandler } from "./ChannelHandler";
-import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import logger from "../logger";
 import {
   fetchMessagesWithinTokenLimit,
   fetchUserAndBotMessages,
 } from "./Service/chatHistoryProcessor";
 import { ChatCompletionRequestMessage } from "openai";
+import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 const MAX_TOKENS = 3000;
 
 export class QuestionChannelHandler implements ChannelHandler {
-  private chatManager: OpenAIProcessor;
+  private chatManager: OpenAIManager;
 
-  constructor(chatManager: OpenAIProcessor) {
+  constructor(chatManager: OpenAIManager) {
     this.chatManager = chatManager;
   }
 
@@ -46,7 +46,7 @@ export class QuestionChannelHandler implements ChannelHandler {
       },
       ...messagesFromChannelHistory,
     ] as ChatCompletionRequestMessage[];
-    return await this.chatManager.chatCompletionClient.chatCompletion(prompts);
+    return await this.chatManager.chatCompletion(prompts);
   }
 
   async processMessageForChannel(message: Message) {

@@ -1,13 +1,13 @@
 import { Message } from "discord.js";
-import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./ChannelHandler";
 import { ChatCompletionRequestMessage } from "openai";
+import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 export class GreetingChannelHandler implements ChannelHandler {
-  private openAIProcessor: OpenAIProcessor;
+  private openAIManager: OpenAIManager;
 
-  constructor(openAIProcessor: OpenAIProcessor) {
-    this.openAIProcessor = openAIProcessor;
+  constructor(openAIManager: OpenAIManager) {
+    this.openAIManager = openAIManager;
   }
 
   async chatCompletionFromUserGreeting(messageContent: string) {
@@ -35,9 +35,7 @@ export class GreetingChannelHandler implements ChannelHandler {
         content: messageContent,
       },
     ] as ChatCompletionRequestMessage[];
-    return await this.openAIProcessor.chatCompletionClient.chatCompletion(
-      prompts
-    );
+    return await this.openAIManager.chatCompletion(prompts);
   }
 
   handle(message: Message): void {

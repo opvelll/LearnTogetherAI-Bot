@@ -1,5 +1,4 @@
 import { ChannelType, Collection, Message, TextChannel } from "discord.js";
-import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./ChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 import logger from "../logger";
@@ -12,22 +11,20 @@ import {
   ChatCompletionResponseMessage,
 } from "openai";
 import { UserEmbeddingManager } from "./Service/UserEmbeddingManager";
+import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 export class ChannelSuggestions implements ChannelHandler {
-  private openAIProcessor: OpenAIProcessor;
+  private openAIManager: OpenAIManager;
   private pineconeManager: PineconeManager;
   private userEmbeddingManager: UserEmbeddingManager;
   private BOT_ID: string;
   private parentChannelId: string;
 
-  constructor(
-    openAIProcessor: OpenAIProcessor,
-    pineconeManager: PineconeManager
-  ) {
-    this.openAIProcessor = openAIProcessor;
+  constructor(openAIManager: OpenAIManager, pineconeManager: PineconeManager) {
+    this.openAIManager = openAIManager;
     this.pineconeManager = pineconeManager;
     this.userEmbeddingManager = new UserEmbeddingManager(
-      openAIProcessor,
+      openAIManager,
       pineconeManager
     );
 
@@ -127,10 +124,9 @@ Role: Assistant
           name: name,
           content: JSON.stringify(channel),
         });
-        const response2 =
-          await this.openAIProcessor.chatCompletionClient.chatCompletion0613(
-            requestMessages
-          );
+        const response2 = await this.openAIManager.chatCompletion0613(
+          requestMessages
+        );
         message.reply(response2!.content!);
       }
     } else {
@@ -199,7 +195,7 @@ Role: Assistant
       );
 
       const responseMessage =
-        await this.openAIProcessor.chatCompletionClient.chatCompletionWithFunction(
+        await this.openAIManager.chatCompletionWithFunction(
           requestMessages,
           this.chatFunctions
         );

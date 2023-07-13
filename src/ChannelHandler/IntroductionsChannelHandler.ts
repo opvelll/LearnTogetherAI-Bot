@@ -1,23 +1,19 @@
 import { Message, TextChannel } from "discord.js";
-import OpenAIProcessor from "../OpenAIProcessor/OpenAIProcessor";
 import { ChannelHandler } from "./ChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
 
 import logger from "../logger";
 import {
-  fetchMessagesWithinTokenLimit,
   fetchUserAndBotMessages,
   transformHistoryToRequestMessages,
 } from "./Service/chatHistoryProcessor";
+import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 export class IntroductionsChannelHandler implements ChannelHandler {
-  private openAIProcessor: OpenAIProcessor;
+  private openAIManager: OpenAIManager;
   private pineconeManager: PineconeManager;
-  constructor(
-    openAIProcessor: OpenAIProcessor,
-    pineconeManager: PineconeManager
-  ) {
-    this.openAIProcessor = openAIProcessor;
+  constructor(openAIManager: OpenAIManager, pineconeManager: PineconeManager) {
+    this.openAIManager = openAIManager;
     this.pineconeManager = pineconeManager;
   }
   private systemPrompt = `
@@ -34,10 +30,9 @@ export class IntroductionsChannelHandler implements ChannelHandler {
         messageList
       );
 
-      const responseMessage =
-        await this.openAIProcessor.chatCompletionClient.chatCompletion(
-          requestMessages
-        );
+      const responseMessage = await this.openAIManager.chatCompletion(
+        requestMessages
+      );
       await message.reply(responseMessage.content!);
     } catch (error) {
       logger.error(error, "Error processing the introduction Channel message:");

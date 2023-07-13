@@ -7,18 +7,18 @@ require("dotenv").config({
 import MyBot from "./bot";
 import logger from "./logger";
 import messageHandler from "./MessageHandler/messageHandler";
-import OpenAIProcessor from "./OpenAIProcessor/OpenAIProcessor";
 import createPineconeInstance from "./Pinecone/Pinecone";
 import initChannelActions from "./MessageHandler/channelActions";
 import interactionCreateHandler from "./InteractionHandler/InteractionHandler";
 import { configLoader } from "./MessageHandler/configLoader";
 import { PineconeManager } from "./Pinecone/PineconeManager";
 import createOpenAIApiInstance from "./OpenAI/OpenAIConfigurator";
+import { OpenAIManager } from "./OpenAI/OpenAIManager";
 
 async function main() {
   try {
     const config = configLoader();
-    const openAIProcessor = new OpenAIProcessor(
+    const openAIManager = new OpenAIManager(
       createOpenAIApiInstance(
         config.OPENAI_ORGANIZATION_ID,
         config.OPENAI_API_KEY
@@ -34,7 +34,7 @@ async function main() {
     );
 
     const onMessage = messageHandler(
-      initChannelActions(openAIProcessor, pineconeManager, config)
+      initChannelActions(openAIManager, pineconeManager, config)
     );
 
     const onInteractionCreate = await interactionCreateHandler(pineconeManager);

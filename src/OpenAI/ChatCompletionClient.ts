@@ -7,7 +7,7 @@ import {
 import logger from "../logger";
 
 class ChatCompletionClient {
-  private openai: OpenAIApi; // Instance to use OpenAI's API
+  protected openai: OpenAIApi; // Instance to use OpenAI's API
 
   constructor(openai: OpenAIApi) {
     this.openai = openai;
