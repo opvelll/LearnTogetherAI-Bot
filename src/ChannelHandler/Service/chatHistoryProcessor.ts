@@ -2,6 +2,36 @@ import { get_encoding } from "@dqbd/tiktoken";
 import { Message, TextChannel } from "discord.js";
 import { ChatCompletionRequestMessage } from "openai";
 
+export async function fetchUserAndBotMessages(
+  messagesLimit: number,
+  userMessage: Message
+) {
+  const channel = userMessage.channel as TextChannel;
+  const messages = await channel.messages.fetch({ limit: messagesLimit });
+
+  const messageMap = messages
+    .filter((msg) => msg.author.id === userMessage.author.id)
+    .reduce((map, message) => map.set(message.id, message), new Map());
+
+  const context = messages
+    .filter((msg) => {
+      if (msg.author.id === userMessage.author.id) {
+        return true;
+      }
+      if (
+        msg.author.bot &&
+        msg.reference &&
+        messageMap.has(msg.reference.messageId)
+      ) {
+        return true;
+      }
+      return false; // 明示的にfalseを返す
+    })
+    .reverse();
+
+  return Array.from(context.values());
+}
+
 /**
  * This function fetches the reply chain of a given message.
  * It only includes messages by the bot and the original author,
@@ -11,7 +41,7 @@ import { ChatCompletionRequestMessage } from "openai";
  * @param message - The Discord message to get the reply chain of
  * @returns - A promise that resolves to the reply chain
  */
-async function fetchReplyChain(BOT_ID: string, message: Message) {
+export async function fetchReplyChain(BOT_ID: string, message: Message) {
   const authorId = message.author.id; // The ID of the sender of the message
   let conversationHistory: Message[] = [];
   let currentMessage: Message | undefined = message;
@@ -48,7 +78,7 @@ async function fetchReplyChain(BOT_ID: string, message: Message) {
  * @param  history - The history of Discord messages
  * @returns  - The history transformed into request messages
  */
-function transformHistoryToRequestMessages(
+export function transformHistoryToRequestMessages(
   systemPrompt: string,
   history: Message[]
 ): ChatCompletionRequestMessage[] {
@@ -82,7 +112,7 @@ function transformHistoryToRequestMessages(
  * @param text The text to tokenize.
  * @returns The number of tokens.
  */
-function calculateTokenLength(text: string): number {
+export function calculateTokenLength(text: string): number {
   const tokenizer = get_encoding("cl100k_base");
   const tokens = tokenizer.encode(text);
   tokenizer.free();
@@ -96,7 +126,7 @@ function calculateTokenLength(text: string): number {
  * @param {TextChannel} channel - The channel to fetch messages from.
  * @returns {Promise<Message[]>} - A promise that resolves to a list of messages that fit within the token limit.
  */
-async function fetchMessagesWithinTokenLimit(
+export async function fetchMessagesWithinTokenLimit(
   messagesLimit: number,
   MAX_TOKENS: number,
   channel: TextChannel
@@ -123,9 +153,3 @@ async function fetchMessagesWithinTokenLimit(
   // Return a list of messages that does not exceed MAX_TOKENS in tokens
   return messageList;
 }
-
-export {
-  fetchReplyChain,
-  transformHistoryToRequestMessages,
-  fetchMessagesWithinTokenLimit,
-};
