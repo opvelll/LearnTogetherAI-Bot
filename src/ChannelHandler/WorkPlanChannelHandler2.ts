@@ -147,8 +147,7 @@ export class WorkPlanChannelHandler2 implements ChannelHandler {
     }
   }
 
-  handle(message: Message): void {
-    // チャンネル1での処理
-    this.processMessage(message);
+  async handle(message: Message) {
+    await this.processMessage(message);
   }
 }

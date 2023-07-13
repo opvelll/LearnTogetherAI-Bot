@@ -157,7 +157,7 @@ userId: 397363536571138049
   Handles incoming messages.
   @param message The message to be handled.
   */
-  public handle(message: Message): void {
-    this.processMessageAndRespond(message);
+  async handle(message: Message) {
+    await this.processMessageAndRespond(message);
   }
 }

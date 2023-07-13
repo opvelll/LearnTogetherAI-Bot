@@ -38,10 +38,9 @@ export class GreetingChannelHandler implements ChannelHandler {
     return await this.openAIManager.chatCompletion(prompts);
   }
 
-  handle(message: Message): void {
+  async handle(message: Message) {
     // チャンネル1での処理
-    this.chatCompletionFromUserGreeting(message.content).then((response) => {
-      message.reply(response);
-    });
+    const response = await this.chatCompletionFromUserGreeting(message.content);
+    await message.reply(response.content!);
   }
 }

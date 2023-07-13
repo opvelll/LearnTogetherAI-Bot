@@ -68,7 +68,7 @@ export class QuestionChannelHandler implements ChannelHandler {
     }
   }
 
-  handle(message: Message): void {
-    this.processMessageForChannel(message);
+  async handle(message: Message) {
+    await this.processMessageForChannel(message);
   }
 }

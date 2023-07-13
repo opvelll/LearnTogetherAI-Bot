@@ -79,7 +79,7 @@ content: ${content.slice(0, MAX_TOKENS - tokeCount)}
     }
   }
 
-  handle(message: Message): void {
-    this.process(message);
+  async handle(message: Message) {
+    await this.process(message);
   }
 }

@@ -210,11 +210,7 @@ Role: Assistant
     }
   }
 
-  async process(message: Message) {
-    this.createChannel(message, "moe", "test");
-  }
-
-  handle(message: Message): void {
-    this.processMessage(message);
+  async handle(message: Message) {
+    await this.processMessage(message);
   }
 }

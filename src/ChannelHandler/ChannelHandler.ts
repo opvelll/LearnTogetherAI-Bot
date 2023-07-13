@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
 
 export interface ChannelHandler {
-  handle(message: Message): void;
+  handle(message: Message): Promise<void>;
 }
