@@ -135,16 +135,16 @@ Role: Assistant
         const response2 = await this.openAIManager.chatCompletion0613(
           requestMessages
         );
-        message.reply(response2!.content!);
+        await message.reply(response2!.content!);
       }
     } else {
-      message.reply(responseMessage!.content!);
+      await message.reply(responseMessage!.content!);
     }
   }
 
   async processMessage(message: Message): Promise<void> {
     try {
-      const messageList = await fetchUserAndBotMessages(12, 3000, message);
+      const messageList = await fetchUserAndBotMessages(12, 3300, message);
       const requestMessages = transformHistoryToRequestMessages(
         this.systemPrompt,
         messageList
