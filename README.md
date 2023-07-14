@@ -10,23 +10,29 @@ ChatGPT を活用したもくもく会をサポートする Discord ボットで
 
 現在、これは試作品であり、開発中です。
 
-https://discord.gg/jCFq2ZKp
+https://discord.gg/qarDc4G7
 
 ### チャンネル
 
+チャンネルごとに試行錯誤しています。
+
 - Greeting(挨拶): ChatGPT と一言挨拶する(履歴を読まない)
-- ResorceTranslation(情報共有): 英語のメッセージやリンクがチャンネルに貼られた場合、リンク先のページのタイトルや内容の一部(3000 文字)を抽出し、それを要約および翻訳します。ただし、Twitter のような JavaScript を使用するウェブサイトは対応していません。
+- ResorceTranslation(情報共有): 英語のメッセージやリンクがチャンネルに貼られた場合、リンク先のページのタイトルや内容の一部(8000 文字)を抽出し、それを要約および翻訳します。ただし、Twitter のような JavaScript を使用するウェブサイトは対応していません。
 - Question(質問): チャンネルの履歴を読みながら質問に答えます。
-- Introductions(自己紹介): ChatGPT がチャンネルの履歴を読んで同じような関心を持つユーザーをおすすめします。
+- Introductions(自己紹介): ChatGPT が自己紹介に返答します。
 - WorkPlan(作業計画): 書き込まれたもくもく会ですることを DB に保存、DB の中から似た内容を検索、検索結果から同じような関心を持つユーザーをおすすめする。
-- WorkPlan2(作業計画): ここでは ChatGPT の機能呼び出しを使用します。ChatGPT が自動的に書き込まれたもくもく会の計画を判断し、DB に保存します。存されたデータから類似した内容を持つユーザーをおすすめします。（このチャンネルだけ BOT にリプライすると会話が続きます。）
+- WorkPlan2(作業計画): ここでは ChatGPT の機能呼び出しを使用します。ChatGPT がユーザーの目的などを聞いて、DB に保存します。保存されたデータから類似した内容を持つユーザーをおすすめします。
+- CHANNEL_SUGGESTION(チャンネル提案): 新しいチャンネルを ChatGPT が作ります。
+
+Chat GPT は会話の履歴から次のメッセージを作ることができます。挨拶・情報共有チャンネルでは履歴を読まない一言ずつの返答をします。あと質問チャンネル以外は履歴からユーザーとボットの会話のみ取り出すようにしています。
 
 ### スラッシュコマンド
 
-- /delete_mydata :DB に保存されたユーザーのデータをすべて消去します。
+- /delete_mydata : DB に保存されたユーザーのデータをすべて消去します。
 
 ## 自分の Discord サーバーで Bot を動かす
 
+動かしたい奇特な方がいるなら、以下のようにします。
 注意:各サービス（OpenAI,Pinecone,AWS Lightsail）は料金が発生するので調べてから利用して下さい。(一応どのサービスにも初回無料枠相当のものがあります)
 
 ### 1. リポジトリをクローンする
@@ -54,10 +60,14 @@ DISCORD_CLIENT_ID=
 OPENAI_API_KEY=
 OPENAI_ORGANIZATION_ID=
 
+GUILD_ID=
 CHANNEL_ID_GREETING=
+CHANNEL_ID_SELF_INTRO=
 CHANNEL_ID_QUESTION=
 CHANNEL_ID_WORK_PLAN=
 CHANNEL_ID_WORK_PLAN2=
+CHANNEL_ID_TRANSLATION=
+CHANNEL_ID_CHANNEL_SUGGESTION=
 
 PINECONE_API_KEY=
 PINECONE_ENVIRONMENT=
