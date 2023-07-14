@@ -1,8 +1,6 @@
 import { Message } from "discord.js";
 import { ChannelHandler } from "./ChannelHandler";
 import { PineconeManager } from "../Pinecone/PineconeManager";
-import { MetadataObj } from "../Pinecone/MetadataObj";
-import { toUnixTimeStampAtDayLevel } from "../Pinecone/dateUtils";
 import logger from "../logger";
 import {
   fetchReplyChain,
@@ -99,7 +97,7 @@ Role: Assistant
           content: {
             type: "string",
             description:
-              "保存するユーザーについての情報。今日やること、プロジェクト、目的などをまとめた100文字程度の文章が理想。また様々なキーワードが多いと良い",
+              "保存するユーザーについての情報。100文字程度の文章が理想。また様々なキーワードが多いと良い",
           },
         },
         required: ["content"],

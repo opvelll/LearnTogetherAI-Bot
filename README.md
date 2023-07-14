@@ -68,6 +68,7 @@ CHANNEL_ID_WORK_PLAN=
 CHANNEL_ID_WORK_PLAN2=
 CHANNEL_ID_TRANSLATION=
 CHANNEL_ID_CHANNEL_SUGGESTION=
+CHANNEL_ID_MOKUMOKU_CATEGORY=モクモク用チャンネルカテゴリーのID
 
 PINECONE_API_KEY=
 PINECONE_ENVIRONMENT=
@@ -163,10 +164,12 @@ pm2 start "npm run start" --name "mybot"
 AWS Lightsail の場合
 
 ```sh
+cd LearnTogetherAI-Bot/
 pm2 stop mybot
 git pull
 npm install
 npm run build
 npm run register
-pm2 start mybot
+nano .env
+pm2 restart mybot
 ```

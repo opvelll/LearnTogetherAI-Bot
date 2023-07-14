@@ -13,28 +13,15 @@ import {
 } from "openai";
 import { UserEmbeddingManager } from "./Service/UserEmbeddingManager";
 import { OpenAIManager } from "../OpenAI/OpenAIManager";
+import { ConfigData } from "../MessageHandler/configLoader";
 
 export class ChannelSuggestions implements ChannelHandler {
   private openAIManager: OpenAIManager;
-  private pineconeManager: PineconeManager;
-  private userEmbeddingManager: UserEmbeddingManager;
-  private BOT_ID: string;
   private parentChannelId: string;
 
-  constructor(openAIManager: OpenAIManager, pineconeManager: PineconeManager) {
+  constructor(openAIManager: OpenAIManager, config: ConfigData) {
     this.openAIManager = openAIManager;
-    this.pineconeManager = pineconeManager;
-    this.userEmbeddingManager = new UserEmbeddingManager(
-      openAIManager,
-      pineconeManager
-    );
-
-    if (!process.env.DISCORD_CLIENT_ID) {
-      throw Error("DISCORD_CLIENT_ID is not defined");
-    } else {
-      this.BOT_ID = process.env.DISCORD_CLIENT_ID;
-    }
-    this.parentChannelId = "1128312706273910884";
+    this.parentChannelId = config.CHANNEL_ID_MOKUMOKU_CATEGORY!;
   }
   private systemPrompt = `
 貴方はもくもく会Discordサーバーに設置されたチャンネルの管理および推奨ボットです。
@@ -189,6 +176,7 @@ Role: Assistant
 
   async processMessage(message: Message): Promise<void> {
     try {
+      console.log("processMessage");
       const messageList = await fetchUserAndBotMessages(10, 3000, message);
       const requestMessages = transformHistoryToRequestMessages(
         await this.appendChannelListToPrompt(message, this.systemPrompt),
