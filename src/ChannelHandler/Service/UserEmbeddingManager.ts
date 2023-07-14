@@ -28,7 +28,11 @@ export class UserEmbeddingManager {
       createdAt: toUnixTimeStampAtDayLevel(message.createdAt),
     };
 
-    await this.pineconeManager.upsertData(message.id, embedding, metadata); // message.idをuuidのように使う
+    await this.pineconeManager.upsertData(
+      message.author.id, // message.author.id で一人一つにする。
+      embedding,
+      metadata
+    );
     return embedding;
   }
 
