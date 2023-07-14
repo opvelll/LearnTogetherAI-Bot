@@ -5,6 +5,7 @@ import * as cheerio from "cheerio";
 import fetch from "node-fetch";
 import { ChannelHandler } from "./ChannelHandler";
 import { OpenAIManager } from "../OpenAI/OpenAIManager";
+import puppeteer from "puppeteer";
 
 // このチャンネルハンドラは、メッセージにURLが含まれていた場合、そのURLのページをスクレイピングして、
 // そのページのタイトルと本文をOpenAIに投げて、日本語に翻訳して返す。
@@ -27,7 +28,7 @@ export class ResourceTranslationChannelHandler implements ChannelHandler {
 
   async process(message: Message) {
     const urls = this.extractUrls(message.content);
-    const MAX_TOKENS = 9000;
+    const MAX_TOKENS = 4000;
     let tokeCount = 0;
     let texts = "";
 
@@ -40,11 +41,23 @@ export class ResourceTranslationChannelHandler implements ChannelHandler {
     try {
       // urlがあった場合はスクレイピングしてテキストを取得する
       if (urls.length !== 0) {
-        const response = await fetch(urls[0]);
-        const body = await response.text();
-        const $ = cheerio.load(body);
+        const browser = await puppeteer.launch({ headless: "new" });
+        const page = await browser.newPage();
+
+        await page.goto(urls[0], { waitUntil: "networkidle0" });
+        const html = await page.content();
+
+        const $ = cheerio.load(html);
         const title = $("title").text();
-        const content = $("body").text();
+        let content: string;
+
+        if (urls[0].includes("twitter.com")) {
+          // Twitterのページの場合はarticleタグ内のテキストを取得
+          content = $("article").text();
+        } else {
+          // それ以外のページの場合はbodyタグ内のテキストを取得
+          content = $("body").text();
+        }
 
         logger.info({ title, content }, "result");
         texts = `
@@ -54,6 +67,7 @@ title: ${title}
 content: ${content.slice(0, MAX_TOKENS - tokeCount)}
 \`\`\`
 `;
+        await browser.close();
       }
 
       // OpenAIに投げる
@@ -68,14 +82,14 @@ content: ${content.slice(0, MAX_TOKENS - tokeCount)}
         },
       ] as ChatCompletionRequestMessage[];
 
-      const responseMessage = await this.openAIManager.chatCompletion16k(
+      const responseMessage = await this.openAIManager.chatCompletion(
         chatCompletionMessages
       );
 
-      message.reply(responseMessage.content!);
+      await message.reply(responseMessage.content!);
     } catch (error) {
       logger.error({ error }, "url translation error");
-      message.reply("Sorry, I couldn't translate it.");
+      await message.reply("Sorry, I couldn't translate it.");
     }
   }
 

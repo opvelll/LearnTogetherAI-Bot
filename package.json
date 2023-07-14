@@ -9,6 +9,7 @@
     "node-fetch": "^2.6.12",
     "openai": "^3.3.0",
     "pino": "^8.14.1",
+    "puppeteer": "^20.8.2",
     "website-scraper": "^5.3.1"
   },
   "name": "learnai",
