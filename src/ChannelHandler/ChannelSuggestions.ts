@@ -176,7 +176,6 @@ Role: Assistant
 
   async processMessage(message: Message): Promise<void> {
     try {
-      console.log("processMessage");
       const messageList = await fetchUserAndBotMessages(10, 3000, message);
       const requestMessages = transformHistoryToRequestMessages(
         await this.appendChannelListToPrompt(message, this.systemPrompt),
