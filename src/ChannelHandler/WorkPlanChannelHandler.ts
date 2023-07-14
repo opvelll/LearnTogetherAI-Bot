@@ -152,11 +152,6 @@ userId: 397363536571138049
     }
   }
 
-  /**
-  
-  Handles incoming messages.
-  @param message The message to be handled.
-  */
   async handle(message: Message) {
     await this.processMessageAndRespond(message);
   }

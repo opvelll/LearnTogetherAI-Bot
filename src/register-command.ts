@@ -11,7 +11,8 @@ require("dotenv").config({
 const commands = [
   {
     name: DELETE_MY_DATA,
-    description: "DBに保存されている自己紹介や今日することデータを削除します",
+    description:
+      "DBに保存されている自分の自己紹介や今日することデータを削除します",
   },
 ];
 

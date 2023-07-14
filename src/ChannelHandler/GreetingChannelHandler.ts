@@ -39,7 +39,6 @@ export class GreetingChannelHandler implements ChannelHandler {
   }
 
   async handle(message: Message) {
-    // チャンネル1での処理
     const response = await this.chatCompletionFromUserGreeting(message.content);
     await message.reply(response.content!);
   }

@@ -4,6 +4,7 @@ import { PineconeManager } from "../Pinecone/PineconeManager";
 import logger from "../logger";
 import {
   fetchReplyChain,
+  fetchUserAndBotMessages,
   transformHistoryToRequestMessages,
 } from "./Service/chatHistoryProcessor";
 import {
@@ -43,14 +44,14 @@ export class ChannelSuggestions implements ChannelHandler {
 チャンネル名を書くときは<#チャンネルID>と書いて下さい。<#123456789>のように。
 ユーザー名を書くときは<@ユーザーID>と書いて下さい。<@123456789>のように。
 
-例1:
+例:
 \`\`\`
 Role: User
 <@1111111>: 今日もディスコード用chatgptボットの作成だ
 
 Role: Assistant
 お疲れ様です！<@1111111>さん！ディスコード用のchatGPTボットの作成、素晴らしいですね！
-もし他の参加者と一緒に作業したい場合は、既存のチャンネル「今日のもくもく」を使用することをおすすめします。そこでプロジェクトの進捗や質問などを共有することができます。
+もし他の参加者と一緒に作業したい場合は、既存のチャンネル「〇〇」を使用することをおすすめします。そこでプロジェクトの進捗や質問などを共有することができます。
 
 もし新しくチャンネルを作成したい場合は、ディスコード用chatGPTボットに関する話題専用のチャンネルを作成するのはいかがでしょうか？
 例えば、「chatGPTボット開発」というチャンネル名と、「ディスコード用chatGPTボットの作成に関する情報共有や質問を行う場所です」というトピックを設定することができます。
@@ -188,7 +189,7 @@ Role: Assistant
 
   async processMessage(message: Message): Promise<void> {
     try {
-      const messageList = await fetchReplyChain(this.BOT_ID, message);
+      const messageList = await fetchUserAndBotMessages(10, 3000, message);
       const requestMessages = transformHistoryToRequestMessages(
         await this.appendChannelListToPrompt(message, this.systemPrompt),
         messageList
