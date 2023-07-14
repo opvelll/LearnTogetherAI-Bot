@@ -8,6 +8,7 @@ export type ConfigData = {
   CHANNEL_ID_WORK_PLAN2: string | undefined;
   CHANNEL_ID_SELF_INTRO: string | undefined;
   CHANNEL_ID_TRANSLATION: string | undefined;
+  CHANNEL_ID_SUGGESTIONS: string | undefined;
 
   PINECONE_INDEX_NAME: string;
   PINECONE_ENVIRONMENT: string;
@@ -25,6 +26,7 @@ export function configLoader(): ConfigData {
     CHANNEL_ID_WORK_PLAN2,
     CHANNEL_ID_SELF_INTRO,
     CHANNEL_ID_TRANSLATION,
+    CHANNEL_ID_SUGGESTIONS,
 
     PINECONE_INDEX_NAME,
     PINECONE_ENVIRONMENT,
@@ -41,7 +43,8 @@ export function configLoader(): ConfigData {
     !CHANNEL_ID_WORK_PLAN &&
     !CHANNEL_ID_SELF_INTRO &&
     !CHANNEL_ID_WORK_PLAN2 &&
-    !CHANNEL_ID_TRANSLATION
+    !CHANNEL_ID_TRANSLATION &&
+    !CHANNEL_ID_SUGGESTIONS
   ) {
     const errorMessage =
       "None of the required environment variables are set.(channel id)";
@@ -75,6 +78,7 @@ export function configLoader(): ConfigData {
     CHANNEL_ID_WORK_PLAN2,
     CHANNEL_ID_SELF_INTRO,
     CHANNEL_ID_TRANSLATION,
+    CHANNEL_ID_SUGGESTIONS,
 
     PINECONE_INDEX_NAME,
     PINECONE_ENVIRONMENT,

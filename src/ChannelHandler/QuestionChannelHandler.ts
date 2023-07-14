@@ -8,10 +8,9 @@ import {
 import { ChatCompletionRequestMessage } from "openai";
 import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
-const MAX_TOKENS = 3000;
-
 export class QuestionChannelHandler implements ChannelHandler {
   private chatManager: OpenAIManager;
+  MAX_TOKENS = 3000;
 
   constructor(chatManager: OpenAIManager) {
     this.chatManager = chatManager;
@@ -55,7 +54,7 @@ export class QuestionChannelHandler implements ChannelHandler {
       const channel = message.channel as TextChannel;
 
       // MAX_TOKENSトークンを超えないメッセージのリストを取得
-      const list = await fetchUserAndBotMessages(10, message);
+      const list = await fetchUserAndBotMessages(10, this.MAX_TOKENS, message);
 
       const response = await this.chatCompletionFromQuestionWithChannelHistory(
         list

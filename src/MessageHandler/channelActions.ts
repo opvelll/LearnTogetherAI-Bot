@@ -26,9 +26,11 @@ export default function initChannelActions(
     CHANNEL_ID_WORK_PLAN: () =>
       new WorkPlanChannelHandler(openAIManager, pineconeManager),
     CHANNEL_ID_WORK_PLAN2: () =>
-      new ChannelSuggestions(openAIManager, pineconeManager),
+      new WorkPlanChannelHandler2(openAIManager, pineconeManager),
     CHANNEL_ID_TRANSLATION: () =>
       new ResourceTranslationChannelHandler(openAIManager),
+    CHANNEL_ID_SUGGESTIONS: () =>
+      new ChannelSuggestions(openAIManager, pineconeManager),
   };
 
   for (const key in handlers) {

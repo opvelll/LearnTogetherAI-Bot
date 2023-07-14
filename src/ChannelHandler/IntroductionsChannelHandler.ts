@@ -24,7 +24,7 @@ export class IntroductionsChannelHandler implements ChannelHandler {
   async processMessage(message: Message): Promise<void> {
     try {
       // ユーザーとボットの会話メッセージを取得する
-      const messageList = await fetchUserAndBotMessages(10, message);
+      const messageList = await fetchUserAndBotMessages(10, 3000, message);
       const requestMessages = transformHistoryToRequestMessages(
         this.systemPrompt,
         messageList

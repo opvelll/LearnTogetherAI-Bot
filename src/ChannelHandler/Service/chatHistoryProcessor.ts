@@ -4,6 +4,7 @@ import { ChatCompletionRequestMessage } from "openai";
 
 export async function fetchUserAndBotMessages(
   messagesLimit: number,
+  MAX_TOKENS: number,
   userMessage: Message
 ) {
   const channel = userMessage.channel as TextChannel;
@@ -13,23 +14,35 @@ export async function fetchUserAndBotMessages(
     .filter((msg) => msg.author.id === userMessage.author.id)
     .reduce((map, message) => map.set(message.id, message), new Map());
 
-  const context = messages
-    .filter((msg) => {
-      if (msg.author.id === userMessage.author.id) {
-        return true;
-      }
-      if (
-        msg.author.bot &&
-        msg.reference &&
-        messageMap.has(msg.reference.messageId)
-      ) {
-        return true;
-      }
-      return false; // 明示的にfalseを返す
-    })
-    .reverse();
+  const context = messages.filter((msg) => {
+    if (msg.author.id === userMessage.author.id) {
+      return true;
+    }
+    if (
+      msg.author.bot &&
+      msg.reference &&
+      messageMap.has(msg.reference.messageId)
+    ) {
+      return true;
+    }
+    return false;
+  });
 
-  return Array.from(context.values());
+  let totalTokens = 0;
+  const messageList: Message[] = [];
+
+  for (let [key, value] of context) {
+    const estimatedTokens = calculateTokenLength(value.content);
+
+    if (totalTokens + estimatedTokens > MAX_TOKENS) {
+      break;
+    }
+
+    totalTokens += estimatedTokens;
+    messageList.unshift(value);
+  }
+
+  return messageList;
 }
 
 /**
