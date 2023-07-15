@@ -95,7 +95,7 @@ DISCORD_CLIENT_ID=
 ### 5. ボットを Discord サーバーに登録する
 
 - OAuth2 > URL Generator から bot をクリック、
-- 下の欄から Read Messages/View Channels、Send Messages と Read Message History にチェックを入れる
+- 下の欄から Manage Channels、Read Messages/View Channels、Send Messages、Manage Messages、Read Message History にチェックを入れる
 - 生成された URL を開いて、ボットを Discord サーバーに招待する
 
 これも本番、テストそれぞれ行う。
