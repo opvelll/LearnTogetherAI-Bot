@@ -52,6 +52,8 @@ cd LearnTogetherAI-Bot
 プロジェクトのルートディレクトリに.env ファイル（本番用）と.env.dev ファイル（テスト用）を作成します。
 これらの設定で本番用、テスト用のボットの設定を分けます。
 
+CHANNEL*ID*\*だけ１つでも設定すれば動きます。
+
 ```env
 DISCORD_TOKEN=
 DISCORD_APPLICATION_ID=
@@ -68,7 +70,7 @@ CHANNEL_ID_WORK_PLAN=
 CHANNEL_ID_WORK_PLAN2=
 CHANNEL_ID_TRANSLATION=
 CHANNEL_ID_CHANNEL_SUGGESTION=
-CHANNEL_ID_MOKUMOKU_CATEGORY=モクモク用チャンネルカテゴリーのID
+CHANNEL_ID_MOKUMOKU_CATEGORY=モクモク用チャンネルカテゴリーのID。ここにCHANNEL_SUGGESTIONはチャンネルを作る
 
 PINECONE_API_KEY=
 PINECONE_ENVIRONMENT=

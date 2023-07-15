@@ -46,8 +46,7 @@ export function configLoader(): ConfigData {
     !CHANNEL_ID_SELF_INTRO &&
     !CHANNEL_ID_WORK_PLAN2 &&
     !CHANNEL_ID_TRANSLATION &&
-    !CHANNEL_ID_CHANNEL_SUGGESTIONS &&
-    !CHANNEL_ID_MOKUMOKU_CATEGORY
+    !CHANNEL_ID_CHANNEL_SUGGESTIONS
   ) {
     const errorMessage =
       "None of the required environment variables are set.(channel id)";
