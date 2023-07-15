@@ -4,7 +4,8 @@ import { PineconeManager } from "../Pinecone/PineconeManager";
 import logger from "../logger";
 import {
   fetchReplyChain,
-  fetchUserAndBotMessages,
+  fetchUserAndBotConversations,
+  fetchConversationsWithTokenLimit,
   transformHistoryToRequestMessages,
 } from "./Service/chatHistoryProcessor";
 import {
@@ -142,7 +143,11 @@ Role: Assistant
 
   async processMessage(message: Message): Promise<void> {
     try {
-      const messageList = await fetchUserAndBotMessages(12, 3300, message);
+      const messageList = await fetchConversationsWithTokenLimit(
+        12,
+        3300,
+        message
+      );
       const requestMessages = transformHistoryToRequestMessages(
         this.systemPrompt,
         messageList

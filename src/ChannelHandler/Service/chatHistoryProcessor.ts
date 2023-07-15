@@ -1,36 +1,74 @@
 import { get_encoding } from "@dqbd/tiktoken";
-import { Message, TextChannel } from "discord.js";
+import { Interaction, Message, TextChannel } from "discord.js";
 import { ChatCompletionRequestMessage } from "openai";
 
-export async function fetchUserAndBotMessages(
+// Filter messages by user or bot with a reference to the user's message
+export async function filterUserAndBotMessages(
   messagesLimit: number,
-  MAX_TOKENS: number,
-  userMessage: Message
-) {
+  userMessage: Message | Interaction
+): Promise<Map<string, Message>> {
+  // Get the channel and fetch the messages
   const channel = userMessage.channel as TextChannel;
   const messages = await channel.messages.fetch({ limit: messagesLimit });
 
+  // Get the user's ID
+  const userId =
+    userMessage instanceof Message
+      ? userMessage.author.id
+      : userMessage.user.id;
+
+  // Create a map of messages sent by the user
   const messageMap = messages
-    .filter((msg) => msg.author.id === userMessage.author.id)
+    .filter((msg) => msg.author.id === userId)
     .reduce((map, message) => map.set(message.id, message), new Map());
 
+  // Filter messages to include only those sent by the user or a bot referencing the user's message
   const context = messages.filter((msg) => {
-    if (msg.author.id === userMessage.author.id) {
-      return true;
-    }
-    if (
+    const isUserMessage = msg.author.id === userId;
+    const isBotReference =
       msg.author.bot &&
       msg.reference &&
-      messageMap.has(msg.reference.messageId)
-    ) {
-      return true;
-    }
-    return false;
+      messageMap.has(msg.reference.messageId);
+    return isUserMessage || isBotReference;
   });
+
+  return context;
+}
+
+/**
+ * Fetches messages from a user and any bot messages that reference the user's messages.
+ *
+ * @param messagesLimit - The maximum number of messages to fetch from the channel.
+ * @param userMessage - A message or interaction from the user to be used for identifying the user and the channel.
+ * @returns An array of messages involving the user and bot, ordered from the most recent to the oldest.
+ */
+export async function fetchUserAndBotConversations(
+  messagesLimit: number,
+  userMessage: Message | Interaction
+): Promise<Message[]> {
+  const context = await filterUserAndBotMessages(messagesLimit, userMessage);
+  return Array.from(context.values()).reverse();
+}
+
+/**
+ * Fetches a list of messages based on a token limit, includes messages from a user and any bot messages that reference the user's messages.
+ *
+ * @param messagesLimit - The maximum number of messages to fetch from the channel.
+ * @param MAX_TOKENS - The maximum number of tokens allowed in the fetched messages.
+ * @param userMessage - A message from the user to be used for identifying the user and the channel.
+ * @returns An array of messages within the token limit, involving the user and bot, ordered from the most recent to the oldest.
+ */
+export async function fetchConversationsWithTokenLimit(
+  messagesLimit: number,
+  MAX_TOKENS: number,
+  userMessage: Message
+): Promise<Message[]> {
+  const context = await filterUserAndBotMessages(messagesLimit, userMessage);
 
   let totalTokens = 0;
   const messageList: Message[] = [];
 
+  // Iterate through the context messages and add to the list until token limit is reached
   for (let [key, value] of context) {
     const estimatedTokens = calculateTokenLength(value.content);
 

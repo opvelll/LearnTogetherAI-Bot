@@ -3,7 +3,8 @@ import { ChannelHandler } from "./ChannelHandler";
 import logger from "../logger";
 import {
   fetchMessagesWithinTokenLimit,
-  fetchUserAndBotMessages,
+  fetchUserAndBotConversations,
+  fetchConversationsWithTokenLimit,
 } from "./Service/chatHistoryProcessor";
 import { ChatCompletionRequestMessage } from "openai";
 import { OpenAIManager } from "../OpenAI/OpenAIManager";
@@ -54,7 +55,11 @@ export class QuestionChannelHandler implements ChannelHandler {
       const channel = message.channel as TextChannel;
 
       // MAX_TOKENSトークンを超えないメッセージのリストを取得
-      const list = await fetchUserAndBotMessages(10, this.MAX_TOKENS, message);
+      const list = await fetchConversationsWithTokenLimit(
+        10,
+        this.MAX_TOKENS,
+        message
+      );
 
       const response = await this.chatCompletionFromQuestionWithChannelHistory(
         list
