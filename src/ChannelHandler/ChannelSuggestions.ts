@@ -18,11 +18,11 @@ import { ConfigData } from "../MessageHandler/configLoader";
 
 export class ChannelSuggestions implements ChannelHandler {
   private openAIManager: OpenAIManager;
-  private parentChannelId: string;
+  private parentChannelId: string | undefined;
 
   constructor(openAIManager: OpenAIManager, config: ConfigData) {
     this.openAIManager = openAIManager;
-    this.parentChannelId = config.CHANNEL_ID_MOKUMOKU_CATEGORY!;
+    this.parentChannelId = config.CHANNEL_ID_MOKUMOKU_CATEGORY;
   }
   private systemPrompt = `
 貴方はもくもく会Discordサーバーに設置されたチャンネルの管理および推奨ボットです。
@@ -105,7 +105,8 @@ Role: Assistant
         const channel = await this.createChannel(
           message,
           args.name,
-          args.topic
+          args.topic,
+          this.parentChannelId
         );
         requestMessages.push(responseMessage);
         requestMessages.push({
@@ -145,13 +146,29 @@ Role: Assistant
   }
 
   // チャンネルを作成する
-  async createChannel(message: Message, name: string, topic: string) {
-    const channel = await message.guild!.channels.create({
-      name: name,
-      topic: topic,
-      reason: "ChatGPT Discord Bot によってもくもく会用チャンネルを作成",
-      parent: this.parentChannelId,
-    });
+  async createChannel(
+    message: Message,
+    name: string,
+    topic: string,
+    parent?: string
+  ) {
+    let channel;
+    if (parent === undefined) {
+      let options = {
+        name: name,
+        topic: topic,
+        reason: "ChatGPT Discord Bot によってもくもく会用チャンネルを作成",
+      };
+      channel = await message.guild!.channels.create(options);
+    } else {
+      let options = {
+        name: name,
+        topic: topic,
+        reason: "ChatGPT Discord Bot によってもくもく会用チャンネルを作成",
+        parent: parent,
+      };
+      channel = await message.guild!.channels.create(options);
+    }
     if (!channel) {
       throw Error("チャンネルの作成に失敗しました。");
     }

@@ -1,11 +1,16 @@
 import { get_encoding } from "@dqbd/tiktoken";
-import { Interaction, Message, TextChannel } from "discord.js";
+import {
+  CommandInteraction,
+  Interaction,
+  Message,
+  TextChannel,
+} from "discord.js";
 import { ChatCompletionRequestMessage } from "openai";
 
 // Filter messages by user or bot with a reference to the user's message
 export async function filterUserAndBotMessages(
   messagesLimit: number,
-  userMessage: Message | Interaction
+  userMessage: Message | CommandInteraction
 ): Promise<Map<string, Message>> {
   // Get the channel and fetch the messages
   const channel = userMessage.channel as TextChannel;
@@ -44,7 +49,7 @@ export async function filterUserAndBotMessages(
  */
 export async function fetchUserAndBotConversations(
   messagesLimit: number,
-  userMessage: Message | Interaction
+  userMessage: Message | CommandInteraction
 ): Promise<Message[]> {
   const context = await filterUserAndBotMessages(messagesLimit, userMessage);
   return Array.from(context.values()).reverse();

@@ -1,5 +1,10 @@
 import { CommandInteraction, REST, Routes } from "discord.js";
-import { CLEAR_CHAT, DELETE_ALL, DELETE_MY_DATA } from "./command";
+import {
+  CLEAR_CHAT,
+  CLEAR_LAST_MSG,
+  DELETE_ALL,
+  DELETE_MY_DATA,
+} from "./command";
 import logger from "./logger";
 // 環境変数を読み込む (開発環境の場合は.env.devを読み込む)
 const envPath = process.env.NODE_ENV === "dev" ? ".env.dev" : ".env";
@@ -18,6 +23,10 @@ const commands = [
     name: CLEAR_CHAT,
     description: "自分とボットのチャットの履歴を削除します",
   },
+  {
+    name: CLEAR_LAST_MSG,
+    description: "自分とボットの最後のメッセージを削除します",
+  },
 ];
 
 const commands2 = [
@@ -32,6 +41,10 @@ const commands2 = [
   {
     name: CLEAR_CHAT,
     description: "自分とボットのチャットの履歴を削除します",
+  },
+  {
+    name: CLEAR_LAST_MSG,
+    description: "自分とボットの最後のメッセージを削除します",
   },
 ];
 
