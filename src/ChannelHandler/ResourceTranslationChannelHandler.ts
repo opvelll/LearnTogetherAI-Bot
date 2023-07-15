@@ -44,7 +44,8 @@ export class ResourceTranslationChannelHandler implements ChannelHandler {
         const browser = await puppeteer.launch({ headless: "new" });
         const page = await browser.newPage();
 
-        await page.goto(urls[0], { waitUntil: "networkidle0" });
+        // ページにアクセスする
+        await page.goto(urls[0], { waitUntil: "networkidle0" }); // ページが完全に読み込まれるまで待機する
         const html = await page.content();
 
         const $ = cheerio.load(html);

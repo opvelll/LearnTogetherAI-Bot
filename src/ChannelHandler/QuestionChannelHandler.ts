@@ -1,12 +1,10 @@
-import { Message, TextChannel } from "discord.js";
+import { Message } from "discord.js";
 import { ChannelHandler } from "./ChannelHandler";
 import logger from "../logger";
 import {
-  fetchMessagesWithinTokenLimit,
-  fetchUserAndBotConversations,
   fetchConversationsWithTokenLimit,
+  transformHistoryToRequestMessages,
 } from "./Service/chatHistoryProcessor";
-import { ChatCompletionRequestMessage } from "openai";
 import { OpenAIManager } from "../OpenAI/OpenAIManager";
 
 export class QuestionChannelHandler implements ChannelHandler {
@@ -17,53 +15,28 @@ export class QuestionChannelHandler implements ChannelHandler {
     this.chatManager = chatManager;
   }
 
-  async chatCompletionFromQuestionWithChannelHistory(
-    messages: Message<boolean>[]
-  ) {
-    const todayDate = new Date().toLocaleDateString();
-    const systemPrompt = `
-貴方はAI勉強会会場にいる想像力豊かで、色々なことに興味を持つ良き相談役です。
-ユーザーの質問に簡潔に答えてください。
-今日の日付は${todayDate}です。`;
-
-    const messagesFromChannelHistory = messages.map((message) => {
-      if (message.author.bot) {
-        return {
-          role: "assistant",
-          content: message.content,
-        };
-      } else {
-        return {
-          role: "user",
-          content: message.content,
-        };
-      }
-    });
-    const prompts = [
-      {
-        role: "system",
-        content: systemPrompt,
-      },
-      ...messagesFromChannelHistory,
-    ] as ChatCompletionRequestMessage[];
-    return await this.chatManager.chatCompletion(prompts);
-  }
-
   async processMessageForChannel(message: Message) {
     try {
-      // チャンネルを取得
-      const channel = message.channel as TextChannel;
-
-      // MAX_TOKENSトークンを超えないメッセージのリストを取得
+      // メッセージを取得する
       const list = await fetchConversationsWithTokenLimit(
-        10,
+        15,
         this.MAX_TOKENS,
         message
       );
 
-      const response = await this.chatCompletionFromQuestionWithChannelHistory(
-        list
+      const todayDate = new Date().toLocaleDateString();
+      const systemPrompt = `
+貴方はAI勉強会会場にいる想像力豊かで、色々なことに興味を持つ良き相談役です。
+ユーザーの質問に簡潔に答えてください。
+今日の日付は${todayDate}です。`;
+
+      const messageList = transformHistoryToRequestMessages(
+        systemPrompt,
+        list,
+        false
       );
+      const response = await this.chatManager.chatCompletion(messageList);
+
       await message.reply(response);
     } catch (error) {
       logger.error(error, "Error processing message for question channel: ");

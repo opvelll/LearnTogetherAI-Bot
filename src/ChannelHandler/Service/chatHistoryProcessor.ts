@@ -145,11 +145,13 @@ export async function fetchReplyChain(BOT_ID: string, message: Message) {
  *
  * @param  systemPrompt - The initial system prompt for the OpenAI API
  * @param  history - The history of Discord messages
+ * @param  includeUserId - Whether to include user IDs in the transformed messages
  * @returns  - The history transformed into request messages
  */
 export function transformHistoryToRequestMessages(
   systemPrompt: string,
-  history: Message[]
+  history: Message[],
+  includeUserId: boolean = true
 ): ChatCompletionRequestMessage[] {
   const context = history.map((message) => {
     if (message.author.bot) {
@@ -160,7 +162,9 @@ export function transformHistoryToRequestMessages(
     } else {
       return {
         role: "user",
-        content: `<@${message.author.id}>: ${message.content}`,
+        content: includeUserId
+          ? `<@${message.author.id}>: ${message.content}`
+          : `${message.content}`,
       };
     }
   });
