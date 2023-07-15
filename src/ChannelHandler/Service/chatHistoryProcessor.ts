@@ -6,12 +6,13 @@ import {
   TextChannel,
 } from "discord.js";
 import { ChatCompletionRequestMessage } from "openai";
+import { CLEAR_MESSAGE } from "../../MessageHandler/ClearMessage";
 
 // Filter messages by user or bot with a reference to the user's message
 export async function filterUserAndBotMessages(
   messagesLimit: number,
   userMessage: Message | CommandInteraction
-): Promise<Map<string, Message>> {
+): Promise<Message[]> {
   // Get the channel and fetch the messages
   const channel = userMessage.channel as TextChannel;
   const messages = await channel.messages.fetch({ limit: messagesLimit });
@@ -27,15 +28,27 @@ export async function filterUserAndBotMessages(
     .filter((msg) => msg.author.id === userId)
     .reduce((map, message) => map.set(message.id, message), new Map());
 
+  // Create an array to store the context
+  const context: Message[] = [];
+
   // Filter messages to include only those sent by the user or a bot referencing the user's message
-  const context = messages.filter((msg) => {
+  for (const msg of messages.values()) {
     const isUserMessage = msg.author.id === userId;
     const isBotReference =
       msg.author.bot &&
       msg.reference &&
       messageMap.has(msg.reference.messageId);
-    return isUserMessage || isBotReference;
-  });
+    const shouldInclude = isUserMessage || isBotReference;
+
+    // Stop if the message content is "clear"
+    if (msg.content === "clear") {
+      break;
+    }
+
+    if (shouldInclude) {
+      context.push(msg);
+    }
+  }
 
   return context;
 }
@@ -52,7 +65,7 @@ export async function fetchUserAndBotConversations(
   userMessage: Message | CommandInteraction
 ): Promise<Message[]> {
   const context = await filterUserAndBotMessages(messagesLimit, userMessage);
-  return Array.from(context.values()).reverse();
+  return context.reverse();
 }
 
 /**
@@ -74,7 +87,7 @@ export async function fetchConversationsWithTokenLimit(
   const messageList: Message[] = [];
 
   // Iterate through the context messages and add to the list until token limit is reached
-  for (let [key, value] of context) {
+  for (let value of context) {
     const estimatedTokens = calculateTokenLength(value.content);
 
     if (totalTokens + estimatedTokens > MAX_TOKENS) {
