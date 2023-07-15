@@ -1,54 +1,35 @@
 import { Interaction, TextChannel } from "discord.js";
-import { CLEAR_CHAT, DELETE_ALL, DELETE_MY_DATA } from "../command";
-import logger from "../logger";
+import deleteMyData from "./commands/deleteMyData";
+import deleteAllData from "./commands/deleteAllData";
+import clearChat from "./commands/clearChat";
 import { PineconeManager } from "../Pinecone/PineconeManager";
-import { fetchUserAndBotConversations } from "../ChannelHandler/Service/chatHistoryProcessor";
+import logger from "../logger";
+import {
+  CLEAR_CHAT,
+  CLEAR_LAST_MSG,
+  DELETE_ALL,
+  DELETE_MY_DATA,
+} from "../command";
+import clearLastMsg from "./commands/clearLastMsg";
+
+const commandHandlers = new Map<string, Function>();
+commandHandlers.set(DELETE_MY_DATA, deleteMyData);
+commandHandlers.set(DELETE_ALL, deleteAllData);
+commandHandlers.set(CLEAR_CHAT, clearChat);
+commandHandlers.set(CLEAR_LAST_MSG, clearLastMsg);
 
 export default async function interactionCreateHandler(
   pineconeManager: PineconeManager
 ) {
   return async (interaction: Interaction) => {
+    logger.info("Interaction received");
     if (!interaction.isCommand()) return;
 
     const { commandName } = interaction;
 
-    if (commandName === DELETE_MY_DATA) {
-      try {
-        await pineconeManager.deleteUserData(interaction.user.id);
-
-        await interaction.reply({
-          content: `<@${interaction.user.id}> さんのデータを削除しました。`,
-          ephemeral: true,
-        });
-      } catch (error) {
-        logger.error(error);
-        await interaction.reply({
-          content: `<@${interaction.user.id}> さんのデータの削除に失敗しました。`,
-          ephemeral: true,
-        });
-      }
-    } else if (commandName === DELETE_ALL) {
-      await pineconeManager.deleteAllData();
-      await interaction.reply({
-        content: "すべてのデータを削除しました。",
-        ephemeral: true,
-      });
-    } else if (commandName === CLEAR_CHAT) {
-      try {
-        const messages = await fetchUserAndBotConversations(20, interaction);
-        (interaction.channel as TextChannel).bulkDelete(messages);
-        await interaction.reply({
-          content: "あなたとボットの履歴を削除しました。",
-          ephemeral: true,
-        });
-      } catch (error) {
-        logger.error(error);
-        await interaction.reply({
-          content:
-            "あなたとボットの履歴の削除に失敗しました。権限を確認して下さい",
-          ephemeral: true,
-        });
-      }
+    const commandHandler = commandHandlers.get(commandName);
+    if (commandHandler) {
+      await commandHandler(interaction, pineconeManager);
     }
   };
 }
