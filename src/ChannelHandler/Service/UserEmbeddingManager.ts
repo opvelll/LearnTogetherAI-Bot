@@ -17,9 +17,7 @@ export class UserEmbeddingManager {
     message: Message<boolean>,
     content: string
   ) {
-    const embedding = await this.openAIManager.createEmbedding([
-      message.content,
-    ]);
+    const embedding = await this.openAIManager.createEmbedding([content]);
 
     const metadata: MetadataObj = {
       channelId: message.channel.id,
@@ -40,21 +38,20 @@ export class UserEmbeddingManager {
   private async getSimilarUsers(
     embedding: number[],
     message: Message<boolean>
-  ) {
+  ): Promise<MetadataObj[]> {
     const queryResponse = await this.pineconeManager.querySimilarEmbeddings(
       embedding,
       message.author.id
     );
 
-    return queryResponse.matches!.map((match) => {
-      const { author, content, createdAt } = match.metadata as MetadataObj;
-      return { userId: author, content: content, createdAt: createdAt };
-    });
+    return queryResponse.matches!.map((match) => match.metadata as MetadataObj);
   }
 
-  async upsertAndGetSimilarUsers(message: Message, content: string) {
+  async upsertAndGetSimilarUsers(
+    message: Message,
+    content: string
+  ): Promise<MetadataObj[]> {
     const embedding = await this.saveUserInformation(message, content);
-
     return await this.getSimilarUsers(embedding, message);
   }
 }
