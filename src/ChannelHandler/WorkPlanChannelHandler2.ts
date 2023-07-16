@@ -68,7 +68,7 @@ Role: Assistant
 }
 
 Role: Function
-[{userId:"987654321",content:"関心のある分野:AI\\n会話履歴: 今日はdiscord botのことを記事にしよう\\nAIに興味があります","createdAt":1689174000000}]
+[{author:"987654321",content:"関心のある分野:AI\\n会話履歴: 今日はdiscord botのことを記事にしよう\\nAIに興味があります","createdAt":1689174000000}]
 
 Role: Assistant
 今日のもくもく勉強会でおすすめの参加者がいます。
@@ -109,6 +109,7 @@ Role: Assistant
         if (responseMessage.content) {
           await message.reply(responseMessage.content);
         }
+        await message.reply(responseMessage.function_call.arguments);
         const name = responseMessage.function_call.name;
         const args = JSON.parse(responseMessage.function_call.arguments) as {
           userId: string;
